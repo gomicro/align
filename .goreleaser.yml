@@ -1,0 +1,29 @@
+
+builds:
+- env:
+    - CGO_ENABLED=0
+
+  ldflags:
+    - -X "github.com/gomicro/align/cmd.Version={{ .Version }}"
+    - -X "github.com/gomicro/align/cmd.clientID={{ .Env.ALIGN_CLIENT_ID }}"
+    - -X "github.com/gomicro/align/cmd.clientSecret={{ .Env.ALIGN_CLIENT_SECRET }}"
+    - "-s -w"
+
+  goos:
+    - darwin
+    - windows
+    - linux
+
+archives:
+  -
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+
+dockers:
+  -
+    goos: linux
+
+    goarch: amd64
+
+    image_templates:
+      - "ghcr.io/gomicro/align:latest"
+      - "ghcr.io/gomicro/align:{{ .Version }}"

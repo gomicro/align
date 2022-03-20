@@ -2,8 +2,9 @@ package config
 
 // GithubHost represents a single host for which align has a configuration
 type GithubHost struct {
-	Token  string  `yaml:"token"`
-	Limits *Limits `yaml:"limits"`
+	Token          string  `yaml:"token"`
+	PrivateKeyFile string  `yaml:"private_key_file"`
+	Limits         *Limits `yaml:"limits"`
 }
 
 // Limits represents a limits override for the client

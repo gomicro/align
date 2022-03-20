@@ -62,7 +62,10 @@ func authFunc(cmd *cobra.Command, args []string) {
 
 	httpClient := &http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{RootCAs: certs},
+			TLSClientConfig: &tls.Config{
+				RootCAs:    certs,
+				MinVersion: tls.VersionTLS12,
+			},
 		},
 	}
 

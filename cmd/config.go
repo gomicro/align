@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/gomicro/align/config"
@@ -14,7 +15,8 @@ func init() {
 }
 
 var configValidArgs = []string{
-	"release_branch\tthe head branch name to use for creating the release PRs",
+	"github.limits.burst\tburstable rate for the github client",
+	"github.limits.requests_per_second\tmaximum requests per second for the github client",
 }
 
 var configCmd = &cobra.Command{
@@ -28,7 +30,7 @@ var configCmd = &cobra.Command{
 
 func configFunc(cmd *cobra.Command, args []string) {
 	field := args[0]
-	//value := args[1]
+	value := args[1]
 
 	confFile, err := config.ParseFromFile()
 	if err != nil {
@@ -36,6 +38,22 @@ func configFunc(cmd *cobra.Command, args []string) {
 	}
 
 	switch strings.ToLower(field) {
+	case "github.limits.burst":
+		burst, err := strconv.Atoi(value)
+		if err != nil {
+			fmt.Printf("invalid value provided for burst")
+			os.Exit(1)
+		}
+
+		confFile.Github.Limits.Burst = burst
+	case "github.limits.requests_per_second":
+		rps, err := strconv.Atoi(value)
+		if err != nil {
+			fmt.Printf("invalid value provided for requests per second")
+			os.Exit(1)
+		}
+
+		confFile.Github.Limits.RequestsPerSecond = rps
 	default:
 		fmt.Printf("unreconized config field: %v\n", field)
 		os.Exit(1)

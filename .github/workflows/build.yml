@@ -43,8 +43,8 @@ jobs:
 
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      TRAIN_CLIENT_ID: ${{ secrets.OAUTH_CLIENT_ID }}
-      TRAIN_CLIENT_SECRET: ${{ secrets.OAUTH_CLIENT_SECRET }}
+      ALIGN_CLIENT_ID: ${{ secrets.ALIGN_CLIENT_ID }}
+      ALIGN_CLIENT_SECRET: ${{ secrets.ALIGN_CLIENT_SECRET }}
 
     steps:
     - name: Install Go

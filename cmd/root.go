@@ -8,10 +8,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var (
-	dryRun bool
-)
-
 func init() {
 	cobra.OnInitialize(initEnvs)
 

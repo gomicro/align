@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gomicro/align/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

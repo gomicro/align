@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/google/go-github/github"
@@ -113,13 +114,20 @@ func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repositor
 	return repos, nil
 }
 
-func (c *Client) CloneRepo(ctx context.Context, name, baseDir, sshUrl string) error {
+func (c *Client) CloneRepo(ctx context.Context, name, baseDir, url string) error {
 	dir := path.Join(".", baseDir, name)
-	_, err := git.PlainClone(dir, false, &git.CloneOptions{
-		Auth:     c.publicKeys,
-		URL:      sshUrl,
+
+	opts := &git.CloneOptions{
+		URL:      url,
 		Progress: os.Stdout,
-	})
+	}
+
+	opts.Auth = c.ghHTTPSAuth
+	if strings.HasPrefix(url, "git@") {
+		opts.Auth = c.ghSSHAuth
+	}
+
+	_, err := git.PlainClone(dir, false, opts)
 
 	return err
 }

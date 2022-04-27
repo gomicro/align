@@ -18,10 +18,11 @@ import (
 )
 
 type Client struct {
-	cfg        *config.Config
-	ghClient   *github.Client
-	rate       *rate.Limiter
-	publicKeys *sshgit.PublicKeys
+	cfg         *config.Config
+	ghClient    *github.Client
+	rate        *rate.Limiter
+	ghSSHAuth   *sshgit.PublicKeys
+	ghHTTPSAuth *sshgit.Password
 }
 
 func New(cfg *config.Config) (*Client, error) {
@@ -52,23 +53,47 @@ func New(cfg *config.Config) (*Client, error) {
 		cfg.Github.Limits.Burst,
 	)
 
-	_, err = os.Stat(cfg.Github.PrivateKeyFile)
-	if err != nil {
-		return nil, fmt.Errorf("private key file: %w", err)
+	var publicKeys *sshgit.PublicKeys
+	if cfg.Github.PrivateKey != "" && cfg.Github.Username != "" {
+		pem := []byte("")
+
+		publicKeys, err := sshgit.NewPublicKeys(cfg.Github.Username, pem, "")
+		if err != nil {
+			return nil, fmt.Errorf("public keys: %w", err)
+		}
+
+		publicKeys.HostKeyCallbackHelper.HostKeyCallback = ssh.InsecureIgnoreHostKey()
+	} else if cfg.Github.PrivateKeyFile != "" {
+		_, err := os.Stat(cfg.Github.PrivateKeyFile)
+		if err != nil {
+			return nil, fmt.Errorf("private key file: %w", err)
+		}
+
+		publicKeys, err = sshgit.NewPublicKeysFromFile("git", cfg.Github.PrivateKeyFile, "")
+		if err != nil {
+			return nil, fmt.Errorf("public keys file: %w", err)
+		}
+
+		publicKeys.HostKeyCallbackHelper.HostKeyCallback = ssh.InsecureIgnoreHostKey()
 	}
 
-	publicKeys, err := sshgit.NewPublicKeysFromFile("git", cfg.Github.PrivateKeyFile, "")
-	if err != nil {
-		return nil, fmt.Errorf("public keys: %w", err)
+	var pass *sshgit.Password
+	if cfg.Github.Username != "" && cfg.Github.Token != "" {
+		pass = &sshgit.Password{
+			User:     cfg.Github.Username,
+			Password: cfg.Github.Token,
+			HostKeyCallbackHelper: sshgit.HostKeyCallbackHelper{
+				HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+			},
+		}
 	}
-
-	publicKeys.HostKeyCallbackHelper.HostKeyCallback = ssh.InsecureIgnoreHostKey()
 
 	return &Client{
-		cfg:        cfg,
-		ghClient:   github.NewClient(oauth2.NewClient(ctx, ts)),
-		rate:       rl,
-		publicKeys: publicKeys,
+		cfg:         cfg,
+		ghClient:    github.NewClient(oauth2.NewClient(ctx, ts)),
+		rate:        rl,
+		ghSSHAuth:   publicKeys,
+		ghHTTPSAuth: pass,
 	}, nil
 }
 

@@ -8,10 +8,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	sshgit "github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/gomicro/align/config"
 	"github.com/gomicro/trust"
 	"github.com/google/go-github/github"
+	"golang.org/x/crypto/ssh"
 	"golang.org/x/oauth2"
 	"golang.org/x/time/rate"
 )
@@ -20,7 +21,7 @@ type Client struct {
 	cfg        *config.Config
 	ghClient   *github.Client
 	rate       *rate.Limiter
-	publicKeys *ssh.PublicKeys
+	publicKeys *sshgit.PublicKeys
 }
 
 func New(cfg *config.Config) (*Client, error) {
@@ -56,10 +57,12 @@ func New(cfg *config.Config) (*Client, error) {
 		return nil, fmt.Errorf("private key file: %w", err)
 	}
 
-	publicKeys, err := ssh.NewPublicKeysFromFile("git", cfg.Github.PrivateKeyFile, "")
+	publicKeys, err := sshgit.NewPublicKeysFromFile("git", cfg.Github.PrivateKeyFile, "")
 	if err != nil {
 		return nil, fmt.Errorf("public keys: %w", err)
 	}
+
+	publicKeys.HostKeyCallbackHelper.HostKeyCallback = ssh.InsecureIgnoreHostKey()
 
 	return &Client{
 		cfg:        cfg,

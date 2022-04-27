@@ -9,7 +9,6 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(downloadCmd)
 }
 
 var downloadCmd = &cobra.Command{

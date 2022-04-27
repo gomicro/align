@@ -1,4 +1,4 @@
-package cmd
+package configcmd
 
 import (
 	"fmt"
@@ -10,16 +10,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	rootCmd.AddCommand(configCmd)
-}
-
 var configValidArgs = []string{
 	"github.limits.burst\tburstable rate for the github client",
 	"github.limits.requests_per_second\tmaximum requests per second for the github client",
 }
 
-var configCmd = &cobra.Command{
+var ConfigCmd = &cobra.Command{
 	Use:       "config [config_field] [value]",
 	Short:     "config align",
 	Long:      `configure align`,

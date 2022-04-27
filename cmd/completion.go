@@ -17,14 +17,10 @@ var (
 )
 
 func init() {
-	rootCmd.AddCommand(CompletionCmd)
-
-	CompletionCmd.Flags().StringVar(&shell, "shell", defaultShell, "desired shell to generate completions for")
+	completionCmd.Flags().StringVar(&shell, "shell", defaultShell, "desired shell to generate completions for")
 }
 
-// CompletionCmd represents the command for generating completion files for the
-// align cli.
-var CompletionCmd = &cobra.Command{
+var completionCmd = &cobra.Command{
 	Use:   "completion",
 	Short: "Generate completion files for the align cli",
 	Run:   completionFunc,

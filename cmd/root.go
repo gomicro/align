@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/gomicro/align/client"
+	configcmd "github.com/gomicro/align/cmd/config"
 	"github.com/gomicro/align/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -17,6 +18,14 @@ var (
 
 func init() {
 	cobra.OnInitialize(initEnvs)
+	rootCmd.AddCommand(
+		authCmd,
+		completionCmd,
+		downloadCmd,
+		versionCmd,
+
+		configcmd.ConfigCmd,
+	)
 
 	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "show more verbose output")
 	rootCmd.PersistentFlags().BoolP("dryRun", "d", false, "attempt the specified command without actually making live changes")

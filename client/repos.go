@@ -49,7 +49,7 @@ func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repositor
 		return nil, fmt.Errorf("no repos found")
 	}
 
-	repoBar := uiprogress.AddBar(count).
+	bar := uiprogress.AddBar(count).
 		AppendCompleted().
 		PrependElapsed().
 		PrependFunc(func(b *uiprogress.Bar) string {
@@ -72,7 +72,13 @@ func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repositor
 		},
 	}
 
+	if name == "" {
+		userOpts.Type = ""
+		userOpts.Affiliation = "owner"
+	}
+
 	var repos []*github.Repository
+	err = nil
 	for {
 		var rs []*github.Repository
 		c.rate.Wait(ctx) //nolint: errcheck
@@ -91,7 +97,7 @@ func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repositor
 		}
 
 		for i := range rs {
-			repoBar.Incr()
+			bar.Incr()
 
 			if rs[i].GetArchived() {
 				continue
@@ -114,12 +120,45 @@ func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repositor
 	return repos, nil
 }
 
-func (c *Client) CloneRepo(ctx context.Context, name, baseDir, url string) error {
+func (c *Client) CloneRepos(ctx context.Context, repos []*github.Repository) error {
+	count := len(repos)
+	currRepo := ""
+
+	bar := uiprogress.AddBar(count).
+		AppendCompleted().
+		PrependElapsed().
+		PrependFunc(func(b *uiprogress.Bar) string {
+			return fmt.Sprintf("Cloning (%d/%d)", b.Current(), count)
+		}).
+		AppendFunc(func(b *uiprogress.Bar) string {
+			return currRepo
+		})
+
+	dirRepo := parseDirRepoMap(repos)
+
+	for dir, rs := range dirRepo {
+		for i := range rs {
+			currRepo = fmt.Sprintf("\nCurrent Repo: %v/%v", dir, rs[i].name)
+			err := c.CloneRepo(ctx, dir, rs[i].name, rs[i].url, false)
+			if err != nil {
+				return err
+			}
+			bar.Incr()
+		}
+	}
+
+	return nil
+}
+
+func (c *Client) CloneRepo(ctx context.Context, baseDir, name, url string, gitoutput bool) error {
 	dir := path.Join(".", baseDir, name)
 
 	opts := &git.CloneOptions{
-		URL:      url,
-		Progress: os.Stdout,
+		URL: url,
+	}
+
+	if gitoutput {
+		opts.Progress = os.Stdout
 	}
 
 	opts.Auth = c.ghHTTPSAuth
@@ -130,4 +169,28 @@ func (c *Client) CloneRepo(ctx context.Context, name, baseDir, url string) error
 	_, err := git.PlainClone(dir, false, opts)
 
 	return err
+}
+
+type repository struct {
+	name string
+	url  string
+}
+
+func parseDirRepoMap(repos []*github.Repository) map[string][]*repository {
+	var dirRepo = map[string][]*repository{}
+	for _, repo := range repos {
+		parts := strings.Split(*repo.SSHURL, "/")
+
+		dir := strings.Split(parts[0], ":")[1]
+		name := strings.TrimSuffix(parts[1], ".git")
+
+		r := &repository{
+			name: name,
+			url:  *repo.SSHURL,
+		}
+
+		dirRepo[dir] = append(dirRepo[dir], r)
+	}
+
+	return dirRepo
 }

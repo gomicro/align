@@ -78,7 +78,6 @@ func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repositor
 	}
 
 	var repos []*github.Repository
-	err = nil
 	for {
 		var rs []*github.Repository
 		c.rate.Wait(ctx) //nolint: errcheck

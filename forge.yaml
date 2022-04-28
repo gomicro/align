@@ -15,15 +15,6 @@ steps:
   clean:
     help: Clean up all generated files
     cmd: go clean
-  fmt:
-    help: Run gofmt
-    cmd: go fmt ./...
-  linters:
-    help: Run all the linters
-    steps:
-      - lint
-      - fmt
-      - vet
   lint:
     help: Run golangci-lint
     cmd: golangci-lint run
@@ -44,6 +35,3 @@ steps:
   unit_test:
     help: Run the unit tests
     cmd: go test ./...
-  vet:
-    help: Run go vet
-    cmd: go vet ./...

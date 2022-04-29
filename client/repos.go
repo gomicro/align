@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -165,9 +166,12 @@ func (c *Client) CloneRepo(ctx context.Context, baseDir, name, url string, gitou
 		opts.Auth = c.ghSSHAuth
 	}
 
-	_, err := git.PlainClone(dir, false, opts)
+	_, err := git.PlainCloneContext(ctx, dir, false, opts)
+	if err != nil && !errors.Is(err, git.ErrRepositoryAlreadyExists) {
+		return fmt.Errorf("plain clone: %w", err)
+	}
 
-	return err
+	return nil
 }
 
 type repository struct {

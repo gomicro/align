@@ -4,24 +4,22 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/gomicro/align/client"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
 )
 
-func init() {
-}
-
-var downloadCmd = &cobra.Command{
-	Use:               "download [user|org]",
-	Short:             "Download all active repos from an org or user.",
-	Long:              `Download all active repos from an org or user.`,
+var cloneCmd = &cobra.Command{
+	Use:               "clone [user|org]",
+	Short:             "Clone all active repos from an org or user.",
+	Long:              `Clone all active repos from an org or user.`,
 	Args:              cobra.MaximumNArgs(1),
 	ValidArgsFunction: createCmdValidArgsFunc,
 	PersistentPreRun:  setupClient,
-	RunE:              downloadFunc,
+	RunE:              cloneFunc,
 }
 
-func downloadFunc(cmd *cobra.Command, args []string) error {
+func cloneFunc(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
 	uiprogress.Start()
@@ -37,7 +35,9 @@ func downloadFunc(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("get repos: %w", err)
 	}
 
-	err = clt.CloneRepos(ctx, repos)
+	ctx = client.WithRepos(ctx, repos)
+
+	_, err = clt.CloneRepos(ctx)
 	if err != nil {
 		return fmt.Errorf("clone repos: %w", err)
 	}

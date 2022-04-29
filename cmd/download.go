@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
@@ -22,7 +23,9 @@ var downloadCmd = &cobra.Command{
 
 func downloadFunc(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
+
 	uiprogress.Start()
+	defer uiprogress.Stop()
 
 	name := ""
 	if len(args) > 0 {
@@ -31,15 +34,13 @@ func downloadFunc(cmd *cobra.Command, args []string) error {
 
 	repos, err := clt.GetRepos(ctx, name)
 	if err != nil {
-		return err
+		return fmt.Errorf("get repos: %w", err)
 	}
 
 	err = clt.CloneRepos(ctx, repos)
 	if err != nil {
-		return err
+		return fmt.Errorf("clone repos: %w", err)
 	}
-
-	uiprogress.Stop()
 
 	return nil
 }

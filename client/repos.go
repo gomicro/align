@@ -141,7 +141,7 @@ func (c *Client) CloneRepos(ctx context.Context, repos []*github.Repository) err
 			currRepo = fmt.Sprintf("\nCurrent Repo: %v/%v", dir, rs[i].name)
 			err := c.CloneRepo(ctx, dir, rs[i].name, rs[i].url, false)
 			if err != nil {
-				return err
+				return fmt.Errorf("clone repo: %w", err)
 			}
 			bar.Incr()
 		}
@@ -150,14 +150,19 @@ func (c *Client) CloneRepos(ctx context.Context, repos []*github.Repository) err
 	return nil
 }
 
-func (c *Client) CloneRepo(ctx context.Context, baseDir, name, url string, gitoutput bool) error {
+// CloneRepo takes a context, base directory to clone individual repos into, the
+// name to call the repo, the url to clone the repo from, and a boolean to show
+// the output. It attempts to clone the repo into the directory structure of
+// "baseDir/name". If the repo already exists it will skip it, and otherwise
+// returns any errors it encounters.
+func (c *Client) CloneRepo(ctx context.Context, baseDir, name, url string, show bool) error {
 	dir := path.Join(".", baseDir, name)
 
 	opts := &git.CloneOptions{
 		URL: url,
 	}
 
-	if gitoutput {
+	if show {
 		opts.Progress = os.Stdout
 	}
 

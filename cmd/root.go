@@ -21,7 +21,8 @@ func init() {
 	rootCmd.AddCommand(
 		authCmd,
 		completionCmd,
-		downloadCmd,
+		cloneCmd,
+		pullCmd,
 		versionCmd,
 
 		configcmd.ConfigCmd,

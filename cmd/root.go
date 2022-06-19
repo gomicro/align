@@ -22,6 +22,7 @@ func init() {
 		authCmd,
 		completionCmd,
 		cloneCmd,
+		checkoutCmd,
 		pullCmd,
 		versionCmd,
 

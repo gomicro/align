@@ -12,7 +12,7 @@ var pullCmd = &cobra.Command{
 	Use:              "pull [dir]",
 	Short:            "Pull all repos in a directory",
 	Long:             `Pull all repos in a directory.`,
-	Args:             cobra.ExactArgs(1),
+	Args:             cobra.MaximumNArgs(1),
 	PersistentPreRun: setupClient,
 	RunE:             pullFunc,
 }
@@ -20,10 +20,15 @@ var pullCmd = &cobra.Command{
 func pullFunc(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
+	dir := "."
+	if len(args) > 0 {
+		dir = args[0]
+	}
+
 	uiprogress.Start()
 	defer uiprogress.Stop()
 
-	repoDirs, err := clt.GetDirs(ctx, args[0])
+	repoDirs, err := clt.GetDirs(ctx, dir)
 	if err != nil {
 		return fmt.Errorf("get dirs: %w", err)
 	}

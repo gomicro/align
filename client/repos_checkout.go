@@ -11,6 +11,10 @@ import (
 	"github.com/gosuri/uiprogress"
 )
 
+var (
+	ErrUnstagedChanges = errors.New("unstanged changes")
+)
+
 func (c *Client) CheckoutRepos(ctx context.Context, dirs []string, branch string) error {
 	count := len(dirs)
 

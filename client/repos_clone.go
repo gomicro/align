@@ -1,11 +1,12 @@
 package client
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"os/exec"
 	"path"
 
-	"github.com/gomicro/align/git"
 	"github.com/gosuri/uiprogress"
 )
 
@@ -21,7 +22,7 @@ func (c *Client) CloneRepos(ctx context.Context) ([]*repository, error) {
 	}
 
 	count := 0
-	for rs := range dirRepos {
+	for _, rs := range dirRepos {
 		count += len(rs)
 	}
 
@@ -42,12 +43,13 @@ func (c *Client) CloneRepos(ctx context.Context) ([]*repository, error) {
 		for i := range rs {
 			currRepo = fmt.Sprintf("\nCurrent Repo: %v/%v", dir, rs[i].name)
 
-			opts := &git.CloneOptions{
-				URL:         rs[i].url,
-				Destination: path.Join(".", dir, rs[i].name),
-			}
+			dest := path.Join(".", dir, rs[i].name)
+			cmd := exec.Command("git", "clone", rs[i].url, dest)
 
-			err := c.gitClient.Clone(ctx, opts)
+			buf := bytes.Buffer{}
+			cmd.Stdout = &buf
+
+			err := cmd.Run()
 			if err != nil {
 				errs = fmt.Errorf("%w; ", fmt.Errorf("clone repo: %w", err))
 			}

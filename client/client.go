@@ -10,7 +10,6 @@ import (
 
 	sshgit "github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/gomicro/align/config"
-	"github.com/gomicro/align/git"
 	"github.com/gomicro/trust"
 	"github.com/google/go-github/github"
 	"golang.org/x/crypto/ssh"
@@ -24,7 +23,6 @@ type Client struct {
 	rate        *rate.Limiter
 	ghSSHAuth   *sshgit.PublicKeys
 	ghHTTPSAuth *sshgit.Password
-	gitClient   git.Gitter
 }
 
 func New(cfg *config.Config) (*Client, error) {
@@ -90,18 +88,12 @@ func New(cfg *config.Config) (*Client, error) {
 		}
 	}
 
-	gClient, err := git.NewClient()
-	if err != nil {
-		return nil, fmt.Errorf("failed to create git client: %w", err)
-	}
-
 	return &Client{
 		cfg:         cfg,
 		ghClient:    github.NewClient(oauth2.NewClient(ctx, ts)),
 		rate:        rl,
 		ghSSHAuth:   publicKeys,
 		ghHTTPSAuth: pass,
-		gitClient:   gClient,
 	}, nil
 }
 

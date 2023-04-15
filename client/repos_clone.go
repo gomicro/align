@@ -44,7 +44,7 @@ func (c *Client) CloneRepos(ctx context.Context) ([]*repository, error) {
 			currRepo = fmt.Sprintf("\nCurrent Repo: %v/%v", dir, rs[i].name)
 
 			dest := path.Join(".", dir, rs[i].name)
-			cmd := exec.Command("git", "clone", rs[i].url, dest)
+			cmd := exec.CommandContext(ctx, "git", "clone", rs[i].url, dest)
 
 			buf := bytes.Buffer{}
 			cmd.Stdout = &buf

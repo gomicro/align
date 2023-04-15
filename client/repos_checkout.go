@@ -1,13 +1,13 @@
 package client
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"os/exec"
 	"strings"
 
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/gosuri/uiprogress"
 )
 
@@ -15,8 +15,9 @@ var (
 	ErrUnstagedChanges = errors.New("unstanged changes")
 )
 
-func (c *Client) CheckoutRepos(ctx context.Context, dirs []string, branch string) error {
+func (c *Client) CheckoutRepos(ctx context.Context, dirs []string, args []string) error {
 	count := len(dirs)
+	args = append([]string{"checkout"}, args...)
 
 	currRepo := ""
 	bar := uiprogress.AddBar(count).
@@ -30,21 +31,26 @@ func (c *Client) CheckoutRepos(ctx context.Context, dirs []string, branch string
 		})
 
 	unstagedRepos := []string{}
-	for i := range dirs {
-		currRepo = fmt.Sprintf("\nCurrent Repo: %v", dirs[i])
-		err := c.CheckoutRepo(ctx, dirs[i], branch)
-		if err != nil {
-			if errors.Is(err, git.ErrUnstagedChanges) {
-				unstagedRepos = append(unstagedRepos, dirs[i])
-				continue
-			}
+	for _, dir := range dirs {
+		currRepo = fmt.Sprintf("\nCurrent Repo: %v", dir)
 
-			if errors.Is(err, plumbing.ErrReferenceNotFound) {
+		cmd := exec.CommandContext(ctx, "git", args...)
+
+		buf := bytes.Buffer{}
+		cmd.Stdout = &buf
+
+		cmd.Dir = dir
+
+		err := cmd.Run()
+		if err != nil {
+			if errors.Is(err, ErrUnstagedChanges) {
+				unstagedRepos = append(unstagedRepos, dir)
 				continue
 			}
 
 			return fmt.Errorf("checkout repo: %w", err)
 		}
+
 		bar.Incr()
 	}
 
@@ -52,29 +58,6 @@ func (c *Client) CheckoutRepos(ctx context.Context, dirs []string, branch string
 
 	if len(unstagedRepos) > 0 {
 		return fmt.Errorf("unstaged repos needing manual attention: [%s]", strings.Join(unstagedRepos, ", "))
-	}
-
-	return nil
-}
-
-func (c *Client) CheckoutRepo(ctx context.Context, dir, branch string) error {
-	r, err := git.PlainOpen(dir)
-	if err != nil {
-		return fmt.Errorf("open dir: %w: %s", err, dir)
-	}
-
-	w, err := r.Worktree()
-	if err != nil {
-		return fmt.Errorf("worktree: %w", err)
-	}
-
-	opts := &git.CheckoutOptions{
-		Branch: plumbing.NewBranchReferenceName(branch),
-	}
-
-	err = w.Checkout(opts)
-	if err != nil {
-		return fmt.Errorf("checkout: %w: %s", err, dir)
 	}
 
 	return nil

@@ -1,14 +1,12 @@
 package client
 
 import (
+	"bytes"
 	"context"
-	"errors"
 	"fmt"
-	"os"
+	"os/exec"
 	"path"
-	"strings"
 
-	"github.com/go-git/go-git/v5"
 	"github.com/gosuri/uiprogress"
 )
 
@@ -24,7 +22,7 @@ func (c *Client) CloneRepos(ctx context.Context) ([]*repository, error) {
 	}
 
 	count := 0
-	for rs := range dirRepos {
+	for _, rs := range dirRepos {
 		count += len(rs)
 	}
 
@@ -44,10 +42,18 @@ func (c *Client) CloneRepos(ctx context.Context) ([]*repository, error) {
 	for dir, rs := range dirRepos {
 		for i := range rs {
 			currRepo = fmt.Sprintf("\nCurrent Repo: %v/%v", dir, rs[i].name)
-			err := c.CloneRepo(ctx, dir, rs[i].name, rs[i].url, false)
+
+			dest := path.Join(".", dir, rs[i].name)
+			cmd := exec.CommandContext(ctx, "git", "clone", rs[i].url, dest)
+
+			buf := bytes.Buffer{}
+			cmd.Stdout = &buf
+
+			err := cmd.Run()
 			if err != nil {
 				errs = fmt.Errorf("%w; ", fmt.Errorf("clone repo: %w", err))
 			}
+
 			cloned = append(cloned, rs[i])
 			bar.Incr()
 		}
@@ -60,33 +66,4 @@ func (c *Client) CloneRepos(ctx context.Context) ([]*repository, error) {
 	}
 
 	return cloned, nil
-}
-
-// CloneRepo takes a context, base directory to clone individual repos into, the
-// name to call the repo, the url to clone the repo from, and a boolean to show
-// the output. It attempts to clone the repo into the directory structure of
-// "baseDir/name". If the repo already exists it will skip it, and otherwise
-// returns any errors it encounters.
-func (c *Client) CloneRepo(ctx context.Context, baseDir, name, url string, show bool) error {
-	dir := path.Join(".", baseDir, name)
-
-	opts := &git.CloneOptions{
-		URL:  url,
-		Auth: c.ghHTTPSAuth,
-	}
-
-	if show {
-		opts.Progress = os.Stdout
-	}
-
-	if strings.HasPrefix(url, "git@") {
-		opts.Auth = c.ghSSHAuth
-	}
-
-	_, err := git.PlainCloneContext(ctx, dir, false, opts)
-	if err != nil && !errors.Is(err, git.ErrRepositoryAlreadyExists) {
-		return fmt.Errorf("plain clone: %w", err)
-	}
-
-	return nil
 }

@@ -25,7 +25,8 @@ func WithRepos(ctx context.Context, repos []*github.Repository) context.Context 
 }
 
 func RepoMap(ctx context.Context) (map[string][]*repository, error) {
-	repoMap, ok := ctx.Value(reposContextKey).(map[string][]*repository)
+	v := ctx.Value(reposContextKey)
+	repoMap, ok := v.(map[string][]*repository)
 	if !ok {
 		return nil, ErrNotFoundInContext
 	}
@@ -38,7 +39,8 @@ func WithExcludes(ctx context.Context, repos []*repository) context.Context {
 }
 
 func Excludes(ctx context.Context) ([]*repository, error) {
-	excludes, ok := ctx.Value(excludesContextKey).([]*repository)
+	v := ctx.Value(excludesContextKey)
+	excludes, ok := v.([]*repository)
 	if !ok {
 		return nil, nil
 	}

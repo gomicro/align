@@ -5,6 +5,7 @@ align
 /dist
 .DS_Store
 /download_test
+/git_test
 
 # Generated Files
 coverage.txt

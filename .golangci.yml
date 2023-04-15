@@ -5,18 +5,20 @@ run:
 
 linters:
   enable:
-    - deadcode
     - errcheck
     - exportloopref
     - gofmt
     - gosimple
     - govet
     - ineffassign
+    - misspell
     - rowserrcheck
+    - sqlclosecheck
     - staticcheck
     - structcheck
     - typecheck
     - unused
+    - unparam
     - varcheck
   disable:
     - wsl

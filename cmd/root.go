@@ -12,8 +12,7 @@ import (
 )
 
 var (
-	clt    *client.Client
-	dryRun bool
+	clt *client.Client
 )
 
 func init() {
@@ -30,15 +29,8 @@ func init() {
 	)
 
 	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "show more verbose output")
-	rootCmd.PersistentFlags().BoolP("dryRun", "d", false, "attempt the specified command without actually making live changes")
 
 	err := viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
-	if err != nil {
-		fmt.Printf("Error setting up: %v\n", err.Error())
-		os.Exit(1)
-	}
-
-	err = viper.BindPFlag("dryRun", rootCmd.PersistentFlags().Lookup("dryRun"))
 	if err != nil {
 		fmt.Printf("Error setting up: %v\n", err.Error())
 		os.Exit(1)
@@ -74,6 +66,4 @@ func setupClient(cmd *cobra.Command, args []string) {
 		fmt.Printf("Error: %v", err.Error())
 		os.Exit(1)
 	}
-
-	dryRun = viper.GetBool("dryRun")
 }

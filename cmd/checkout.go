@@ -20,8 +20,6 @@ var checkoutCmd = &cobra.Command{
 func checkoutFunc(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
-	branch := args[0]
-
 	dir := "."
 	if len(args) > 1 {
 		dir = args[1]
@@ -35,7 +33,7 @@ func checkoutFunc(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("get dirs: %w", err)
 	}
 
-	err = clt.CheckoutRepos(ctx, repoDirs, branch)
+	err = clt.CheckoutRepos(ctx, repoDirs, args)
 	if err != nil {
 		return fmt.Errorf("checkout repos: %w", err)
 	}

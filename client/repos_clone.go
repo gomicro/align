@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
 	"path"
 
@@ -42,19 +43,36 @@ func (c *Client) CloneRepos(ctx context.Context) ([]*repository, error) {
 	for dir, rs := range dirRepos {
 		for i := range rs {
 			currRepo = fmt.Sprintf("\nCurrent Repo: %v/%v", dir, rs[i].name)
-
 			dest := path.Join(".", dir, rs[i].name)
-			cmd := exec.CommandContext(ctx, "git", "clone", rs[i].url, dest)
 
-			buf := bytes.Buffer{}
-			cmd.Stdout = &buf
-
-			err := cmd.Run()
+			exists, err := dirExists(dest)
 			if err != nil {
-				errs = fmt.Errorf("%w; ", fmt.Errorf("clone repo: %w", err))
+				errs = fmt.Errorf("repo dir: %w; ", err)
+				continue
 			}
 
-			cloned = append(cloned, rs[i])
+			if exists {
+				exists, err = dirExists(path.Join(dest, ".git"))
+				if err != nil {
+					errs = fmt.Errorf("repo git dir: %w; ", err)
+					continue
+				}
+			}
+
+			if !exists {
+				cmd := exec.CommandContext(ctx, "git", "clone", rs[i].url, dest)
+
+				buf := bytes.Buffer{}
+				cmd.Stdout = &buf
+
+				err := cmd.Run()
+				if err != nil {
+					errs = fmt.Errorf("%w; ", fmt.Errorf("clone repo: %w", err))
+				}
+
+				cloned = append(cloned, rs[i])
+			}
+
 			bar.Incr()
 		}
 	}
@@ -66,4 +84,17 @@ func (c *Client) CloneRepos(ctx context.Context) ([]*repository, error) {
 	}
 
 	return cloned, nil
+}
+
+func dirExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+
+	return false, fmt.Errorf("exists check: %w", err)
 }

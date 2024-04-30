@@ -31,21 +31,24 @@ var authCmd = &cobra.Command{
 	Use:   "auth",
 	Short: "auth with github",
 	Long:  `authorize align against github`,
-	Run:   authFunc,
+	RunE:  authFunc,
 }
 
 const (
 	state = "9292a768-34bf-4002-8a69-8ace5302709d"
 )
 
-func authFunc(cmd *cobra.Command, args []string) {
+func authFunc(cmd *cobra.Command, args []string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	if clientID == "" || clientSecret == "" {
+		return fmt.Errorf("client id and secret must be baked into the binary, and are not present")
+	}
+
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
-		fmt.Printf("Error: %v", err.Error())
-		os.Exit(1)
+		return err
 	}
 
 	port := listener.Addr().(*net.TCPAddr).Port
@@ -54,8 +57,7 @@ func authFunc(cmd *cobra.Command, args []string) {
 
 	certs, err := pool.CACerts()
 	if err != nil {
-		fmt.Printf("failed to create cert pool: %v\n", err.Error())
-		os.Exit(1)
+		return fmt.Errorf("failed to create cert pool: %w", err)
 	}
 
 	httpClient := &http.Client{
@@ -95,8 +97,7 @@ func authFunc(cmd *cobra.Command, args []string) {
 
 	err = openBrowser(url)
 	if err != nil {
-		fmt.Printf("Error: %v", err.Error())
-		os.Exit(1)
+		return err
 	}
 
 	tkn := <-token
@@ -104,17 +105,17 @@ func authFunc(cmd *cobra.Command, args []string) {
 
 	c, err := config.ParseFromFile()
 	if err != nil {
-		fmt.Printf("Error: %v", err.Error())
-		os.Exit(1)
+		return err
 	}
 
 	c.Github.Token = tkn
 
 	err = c.WriteFile()
 	if err != nil {
-		fmt.Printf("Error: %v", err.Error())
-		os.Exit(1)
+		return err
 	}
+
+	return nil
 }
 
 func startServer(ctx context.Context, listener net.Listener, conf *oauth2.Config, token chan string) {

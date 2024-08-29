@@ -43,11 +43,13 @@ func authFunc(cmd *cobra.Command, args []string) error {
 	defer cancel()
 
 	if clientID == "" || clientSecret == "" {
+		cmd.SilenceUsage = true
 		return fmt.Errorf("client id and secret must be baked into the binary, and are not present")
 	}
 
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
+		cmd.SilenceUsage = true
 		return err
 	}
 
@@ -57,6 +59,7 @@ func authFunc(cmd *cobra.Command, args []string) error {
 
 	certs, err := pool.CACerts()
 	if err != nil {
+		cmd.SilenceUsage = true
 		return fmt.Errorf("failed to create cert pool: %w", err)
 	}
 
@@ -97,6 +100,7 @@ func authFunc(cmd *cobra.Command, args []string) error {
 
 	err = openBrowser(url)
 	if err != nil {
+		cmd.SilenceUsage = true
 		return err
 	}
 
@@ -105,6 +109,7 @@ func authFunc(cmd *cobra.Command, args []string) error {
 
 	c, err := config.ParseFromFile()
 	if err != nil {
+		cmd.SilenceUsage = true
 		return err
 	}
 
@@ -112,6 +117,7 @@ func authFunc(cmd *cobra.Command, args []string) error {
 
 	err = c.WriteFile()
 	if err != nil {
+		cmd.SilenceUsage = true
 		return err
 	}
 

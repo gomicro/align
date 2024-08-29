@@ -30,11 +30,13 @@ func pullFunc(cmd *cobra.Command, args []string) error {
 
 	repoDirs, err := clt.GetDirs(ctx, dir)
 	if err != nil {
+		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)
 	}
 
 	err = clt.PullRepos(ctx, repoDirs)
 	if err != nil {
+		cmd.SilenceUsage = true
 		return fmt.Errorf("pull repos: %w", err)
 	}
 

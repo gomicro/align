@@ -32,7 +32,7 @@ func init() {
 
 	err := viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
 	if err != nil {
-		fmt.Printf("Error setting up: %v\n", err.Error())
+		fmt.Printf("Error setting up: %s\n", err)
 		os.Exit(1)
 	}
 }
@@ -49,7 +49,6 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Printf("Failed to execute: %v\n", err.Error())
 		os.Exit(1)
 	}
 }
@@ -57,13 +56,13 @@ func Execute() {
 func setupClient(cmd *cobra.Command, args []string) {
 	c, err := config.ParseFromFile()
 	if err != nil {
-		fmt.Printf("Error: %v", err.Error())
+		fmt.Printf("Error: %s\n", err)
 		os.Exit(1)
 	}
 
 	clt, err = client.New(c)
 	if err != nil {
-		fmt.Printf("Error: %v", err.Error())
+		fmt.Printf("Error: %s\n", err)
 		os.Exit(1)
 	}
 }

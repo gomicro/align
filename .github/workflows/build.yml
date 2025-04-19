@@ -1,6 +1,9 @@
 name: Build
 on: [push]
 
+env:
+  GOLANG_VERSION: "1.20"
+
 jobs:
 
   linting:
@@ -26,7 +29,7 @@ jobs:
     - name: Install Go
       uses: actions/setup-go@v5
       with:
-        go-version: "1.20"
+        go-version: "${{ env.GOLANG_VERSION }}"
 
     - name: Checkout
       uses: actions/checkout@v4
@@ -50,7 +53,7 @@ jobs:
     - name: Install Go
       uses: actions/setup-go@v5
       with:
-        go-version: "1.20"
+        go-version: "${{ env.GOLANG_VERSION }}"
 
     - name: Checkout
       uses: actions/checkout@v4

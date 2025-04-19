@@ -6,8 +6,8 @@ run:
 linters:
   enable:
     - errcheck
-    - exportloopref
     - gofmt
+    - copyloopvar
     - gosimple
     - govet
     - ineffassign
@@ -20,10 +20,8 @@ linters:
     - unparam
   disable:
     - wsl
-    - maligned
     - prealloc
     - gochecknoglobals
-    - scopelint
   disable-all: false
   presets:
     - bugs

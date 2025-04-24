@@ -30,11 +30,13 @@ func checkoutFunc(cmd *cobra.Command, args []string) error {
 
 	repoDirs, err := clt.GetDirs(ctx, dir)
 	if err != nil {
+		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)
 	}
 
 	err = clt.CheckoutRepos(ctx, repoDirs, args)
 	if err != nil {
+		cmd.SilenceUsage = true
 		return fmt.Errorf("checkout repos: %w", err)
 	}
 

@@ -32,6 +32,7 @@ func cloneFunc(cmd *cobra.Command, args []string) error {
 
 	repos, err := clt.GetRepos(ctx, name)
 	if err != nil {
+		cmd.SilenceUsage = true
 		return fmt.Errorf("get repos: %w", err)
 	}
 
@@ -39,6 +40,7 @@ func cloneFunc(cmd *cobra.Command, args []string) error {
 
 	_, err = clt.CloneRepos(ctx)
 	if err != nil {
+		cmd.SilenceUsage = true
 		return fmt.Errorf("clone repos: %w", err)
 	}
 

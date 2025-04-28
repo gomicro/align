@@ -8,8 +8,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func init() {
+	checkoutCmd.Flags().StringVarP(&dir, "dir", "d", ".", "directory to checkout repos from")
+}
+
 var checkoutCmd = &cobra.Command{
-	Use:              "checkout [branch] (dir)",
+	Use:              "checkout [branch]",
 	Short:            "checkout the desired branch",
 	Long:             `checkout the desired branch`,
 	Args:             cobra.RangeArgs(1, 2),
@@ -20,11 +24,6 @@ var checkoutCmd = &cobra.Command{
 func checkoutFunc(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
-	dir := "."
-	if len(args) > 1 {
-		dir = args[1]
-	}
-
 	uiprogress.Start()
 	defer uiprogress.Stop()
 
@@ -34,7 +33,7 @@ func checkoutFunc(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("get dirs: %w", err)
 	}
 
-	err = clt.CheckoutRepos(ctx, repoDirs, args)
+	err = clt.CheckoutRepos(ctx, repoDirs, args...)
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("checkout repos: %w", err)

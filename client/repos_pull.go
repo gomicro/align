@@ -9,8 +9,9 @@ import (
 	"github.com/gosuri/uiprogress"
 )
 
-func (c *Client) PullRepos(ctx context.Context, dirs []string) error {
+func (c *Client) PullRepos(ctx context.Context, dirs []string, args ...string) error {
 	count := len(dirs)
+	args = append([]string{"pull"}, args...)
 
 	currRepo := ""
 	bar := uiprogress.AddBar(count).
@@ -26,9 +27,10 @@ func (c *Client) PullRepos(ctx context.Context, dirs []string) error {
 	for _, dir := range dirs {
 		currRepo = fmt.Sprintf("\nCurrent Repo: %v", dir)
 
-		cmd := exec.CommandContext(ctx, "git", "pull")
+		cmd := exec.CommandContext(ctx, "git", args...)
 
 		buf := bytes.Buffer{}
+
 		cmd.Stdout = &buf
 
 		cmd.Dir = dir

@@ -8,22 +8,26 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	dir  string
+	tags bool
+)
+
+func init() {
+	pullCmd.Flags().StringVarP(&dir, "dir", "d", ".", "directory to pull repos from")
+	pullCmd.Flags().BoolVar(&tags, "tags", false, "pull tags")
+}
+
 var pullCmd = &cobra.Command{
-	Use:              "pull [dir]",
+	Use:              "pull",
 	Short:            "Pull all repos in a directory",
 	Long:             `Pull all repos in a directory.`,
-	Args:             cobra.MaximumNArgs(1),
 	PersistentPreRun: setupClient,
 	RunE:             pullFunc,
 }
 
 func pullFunc(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
-
-	dir := "."
-	if len(args) > 0 {
-		dir = args[0]
-	}
 
 	uiprogress.Start()
 	defer uiprogress.Stop()
@@ -34,7 +38,11 @@ func pullFunc(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("get dirs: %w", err)
 	}
 
-	err = clt.PullRepos(ctx, repoDirs)
+	if tags {
+		args = append(args, "--tags")
+	}
+
+	err = clt.PullRepos(ctx, repoDirs, args...)
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("pull repos: %w", err)

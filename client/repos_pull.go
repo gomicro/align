@@ -13,37 +13,37 @@ func (c *Client) PullRepos(ctx context.Context, dirs []string, args ...string) e
 	count := len(dirs)
 	args = append([]string{"pull"}, args...)
 
-	currRepo := ""
-	bar := uiprogress.AddBar(count).
-		AppendCompleted().
-		PrependElapsed().
-		PrependFunc(func(b *uiprogress.Bar) string {
-			return fmt.Sprintf("Pulling (%d/%d)", b.Current(), count)
-		}).
-		AppendFunc(func(b *uiprogress.Bar) string {
-			return currRepo
-		})
+	verbose := Verbose(ctx)
 
-	for _, dir := range dirs {
-		currRepo = fmt.Sprintf("\nCurrent Repo: %v", dir)
+	if !verbose {
+		currRepo := ""
+		bar := uiprogress.AddBar(count).
+			AppendCompleted().
+			PrependElapsed().
+			PrependFunc(func(b *uiprogress.Bar) string {
+				return fmt.Sprintf("Pulling (%d/%d)", b.Current(), count)
+			}).
+			AppendFunc(func(b *uiprogress.Bar) string {
+				return currRepo
+			})
 
-		cmd := exec.CommandContext(ctx, "git", args...)
+		for _, dir := range dirs {
+			currRepo = fmt.Sprintf("\nCurrent Repo: %v", dir)
 
-		buf := bytes.Buffer{}
+			cmd := exec.CommandContext(ctx, "git", args...)
+			cmd.Stdout = &bytes.Buffer{}
+			cmd.Dir = dir
 
-		cmd.Stdout = &buf
+			err := cmd.Run()
+			if err != nil {
+				return fmt.Errorf("pull repo: %w", err)
+			}
 
-		cmd.Dir = dir
-
-		err := cmd.Run()
-		if err != nil {
-			return fmt.Errorf("pull repo: %w", err)
+			bar.Incr()
 		}
 
-		bar.Incr()
+		currRepo = ""
 	}
-
-	currRepo = ""
 
 	return nil
 }

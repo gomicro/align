@@ -1,5 +1,6 @@
 # Align
-[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/gomicro/align/Build/master)](https://github.com/gomicro/align/actions?query=workflow%3ABuild)
+
+[![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/gomicro/align/build.yml?branch=main)](https://github.com/gomicro/align/actions?query=workflow%3ABuild)
 [![Go Reportcard](https://goreportcard.com/badge/github.com/gomicro/align)](https://goreportcard.com/report/github.com/gomicro/align)
 [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white)](https://pkg.go.dev/github.com/gomicro/align)
 [![License](https://img.shields.io/github/license/gomicro/align.svg)](https://github.com/gomicro/align/blob/master/LICENSE.md)

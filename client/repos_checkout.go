@@ -15,7 +15,7 @@ var (
 	ErrUnstagedChanges = errors.New("unstanged changes")
 )
 
-func (c *Client) CheckoutRepos(ctx context.Context, dirs []string, args []string) error {
+func (c *Client) CheckoutRepos(ctx context.Context, dirs []string, args ...string) error {
 	count := len(dirs)
 	args = append([]string{"checkout"}, args...)
 

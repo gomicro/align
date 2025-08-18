@@ -3,12 +3,12 @@ package client
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 )
 
 func (c *Client) GetDirs(ctx context.Context, baseDir string) ([]string, error) {
-	files, err := ioutil.ReadDir(baseDir)
+	files, err := os.ReadDir(baseDir)
 	if err != nil {
 		return nil, fmt.Errorf("read base dir: %w", err)
 	}

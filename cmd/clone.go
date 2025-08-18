@@ -7,6 +7,7 @@ import (
 	"github.com/gomicro/align/client"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var cloneCmd = &cobra.Command{
@@ -20,10 +21,13 @@ var cloneCmd = &cobra.Command{
 }
 
 func cloneFunc(cmd *cobra.Command, args []string) error {
-	ctx := context.Background()
+	verbose := viper.GetBool("verbose")
+	ctx := client.WithVerbose(context.Background(), verbose)
 
-	uiprogress.Start()
-	defer uiprogress.Stop()
+	if !verbose {
+		uiprogress.Start()
+		defer uiprogress.Stop()
+	}
 
 	name := ""
 	if len(args) > 0 {

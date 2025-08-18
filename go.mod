@@ -1,9 +1,12 @@
 module github.com/gomicro/align
 
-go 1.18
+go 1.23.3
+
+toolchain go1.24.5
 
 require (
 	github.com/go-git/go-git/v5 v5.4.2
+	github.com/gomicro/scribe v0.0.0-20250818044048-c8eae6079552
 	github.com/gomicro/trust v0.0.1
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/gosuri/uiprogress v0.0.1
@@ -30,7 +33,7 @@ require (
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
-	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/onsi/gomega v1.16.0 // indirect
@@ -42,7 +45,7 @@ require (
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.0 // indirect
 	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d // indirect
-	golang.org/x/sys v0.0.0-20211210111614-af8b64212486 // indirect
+	golang.org/x/sys v0.25.0 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect

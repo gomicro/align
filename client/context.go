@@ -14,8 +14,9 @@ type reposContext int
 var (
 	reposContextKey    reposContext = 0
 	excludesContextKey reposContext = 1
+	verboseContextKey  reposContext = 2
 
-	ErrNotFoundInContext = errors.New("repos map not found in context")
+	ErrReposNotFoundInContext = errors.New("repos map not found in context")
 )
 
 func WithRepos(ctx context.Context, repos []*github.Repository) context.Context {
@@ -28,7 +29,7 @@ func RepoMap(ctx context.Context) (map[string][]*repository, error) {
 	v := ctx.Value(reposContextKey)
 	repoMap, ok := v.(map[string][]*repository)
 	if !ok {
-		return nil, ErrNotFoundInContext
+		return nil, ErrReposNotFoundInContext
 	}
 
 	return repoMap, nil
@@ -97,4 +98,18 @@ func removeExcludes(ctx context.Context, repoMap map[string][]*repository) (map[
 	}
 
 	return newMap, nil
+}
+
+func WithVerbose(ctx context.Context, verbose bool) context.Context {
+	return context.WithValue(ctx, verboseContextKey, verbose)
+}
+
+func Verbose(ctx context.Context) bool {
+	v := ctx.Value(verboseContextKey)
+	verbose, ok := v.(bool)
+	if !ok {
+		return false
+	}
+
+	return verbose
 }

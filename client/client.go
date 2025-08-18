@@ -10,6 +10,8 @@ import (
 
 	sshgit "github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/gomicro/align/config"
+	"github.com/gomicro/scribe"
+	"github.com/gomicro/scribe/color"
 	"github.com/gomicro/trust"
 	"github.com/google/go-github/github"
 	"golang.org/x/crypto/ssh"
@@ -23,6 +25,7 @@ type Client struct {
 	rate        *rate.Limiter
 	ghSSHAuth   *sshgit.PublicKeys
 	ghHTTPSAuth *sshgit.Password
+	scrb        scribe.Scriber
 }
 
 func New(cfg *config.Config) (*Client, error) {
@@ -88,12 +91,26 @@ func New(cfg *config.Config) (*Client, error) {
 		}
 	}
 
+	t := &scribe.Theme{
+		Describe: scribe.NoopDecorator,
+		Print:    scribe.NoopDecorator,
+		Error: func(err error) string {
+			return fmt.Sprintf("%s %s\n", color.RedFg("Error:"), err)
+		},
+	}
+
+	scrb, err := scribe.NewScribe(os.Stdout, t)
+	if err != nil {
+		return nil, fmt.Errorf("scribe: %w", err)
+	}
+
 	return &Client{
 		cfg:         cfg,
 		ghClient:    github.NewClient(oauth2.NewClient(ctx, ts)),
 		rate:        rl,
 		ghSSHAuth:   publicKeys,
 		ghHTTPSAuth: pass,
+		scrb:        scrb,
 	}, nil
 }
 

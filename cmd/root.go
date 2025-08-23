@@ -23,6 +23,7 @@ func init() {
 		cloneCmd,
 		checkoutCmd,
 		pullCmd,
+		pushCmd,
 		versionCmd,
 
 		configcmd.ConfigCmd,

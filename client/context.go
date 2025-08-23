@@ -25,9 +25,9 @@ func WithRepos(ctx context.Context, repos []*github.Repository) context.Context 
 	return context.WithValue(ctx, reposContextKey, repoMap)
 }
 
-func RepoMap(ctx context.Context) (map[string][]*repository, error) {
+func RepoMap(ctx context.Context) (map[string][]*Repository, error) {
 	v := ctx.Value(reposContextKey)
-	repoMap, ok := v.(map[string][]*repository)
+	repoMap, ok := v.(map[string][]*Repository)
 	if !ok {
 		return nil, ErrReposNotFoundInContext
 	}
@@ -35,13 +35,13 @@ func RepoMap(ctx context.Context) (map[string][]*repository, error) {
 	return repoMap, nil
 }
 
-func WithExcludes(ctx context.Context, repos []*repository) context.Context {
+func WithExcludes(ctx context.Context, repos []*Repository) context.Context {
 	return context.WithValue(ctx, excludesContextKey, repos)
 }
 
-func Excludes(ctx context.Context) ([]*repository, error) {
+func Excludes(ctx context.Context) ([]*Repository, error) {
 	v := ctx.Value(excludesContextKey)
-	excludes, ok := v.([]*repository)
+	excludes, ok := v.([]*Repository)
 	if !ok {
 		return nil, nil
 	}
@@ -49,20 +49,20 @@ func Excludes(ctx context.Context) ([]*repository, error) {
 	return excludes, nil
 }
 
-type repository struct {
+type Repository struct {
 	name string
 	url  string
 }
 
-func parseDirRepoMap(repos []*github.Repository) map[string][]*repository {
-	var dirRepo = map[string][]*repository{}
+func parseDirRepoMap(repos []*github.Repository) map[string][]*Repository {
+	var dirRepo = map[string][]*Repository{}
 	for _, repo := range repos {
 		parts := strings.Split(*repo.SSHURL, "/")
 
 		dir := strings.Split(parts[0], ":")[1]
 		name := strings.TrimSuffix(parts[1], ".git")
 
-		r := &repository{
+		r := &Repository{
 			name: name,
 			url:  *repo.SSHURL,
 		}
@@ -73,8 +73,8 @@ func parseDirRepoMap(repos []*github.Repository) map[string][]*repository {
 	return dirRepo
 }
 
-func removeExcludes(ctx context.Context, repoMap map[string][]*repository) (map[string][]*repository, error) {
-	newMap := map[string][]*repository{}
+func removeExcludes(ctx context.Context, repoMap map[string][]*Repository) (map[string][]*Repository, error) {
+	newMap := map[string][]*Repository{}
 
 	excludes, err := Excludes(ctx)
 	if err != nil {

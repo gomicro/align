@@ -11,7 +11,7 @@ import (
 	"github.com/gosuri/uiprogress"
 )
 
-func (c *Client) CloneRepos(ctx context.Context) ([]*repository, error) {
+func (c *Client) CloneRepos(ctx context.Context) ([]*Repository, error) {
 	dirRepos, err := RepoMap(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("repomap context: %w", err)
@@ -38,7 +38,7 @@ func (c *Client) CloneRepos(ctx context.Context) ([]*repository, error) {
 			return currRepo
 		})
 
-	cloned := []*repository{}
+	cloned := []*Repository{}
 	var errs error
 	for dir, rs := range dirRepos {
 		for i := range rs {

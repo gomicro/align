@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	clt *client.Client
+	clt client.Clienter
 )
 
 func init() {

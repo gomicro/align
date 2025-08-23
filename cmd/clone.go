@@ -10,6 +10,10 @@ import (
 	"github.com/spf13/viper"
 )
 
+func init() {
+	RootCmd.AddCommand(cloneCmd)
+}
+
 var cloneCmd = &cobra.Command{
 	Use:               "clone [user|org]",
 	Short:             "Clone all active repos from an org or user.",

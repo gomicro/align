@@ -6,16 +6,21 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gomicro/align/cmd"
 	"github.com/gomicro/align/config"
 	"github.com/spf13/cobra"
 )
+
+func init() {
+	cmd.RootCmd.AddCommand(configCmd)
+}
 
 var configValidArgs = []string{
 	"github.limits.burst\tburstable rate for the github client",
 	"github.limits.requests_per_second\tmaximum requests per second for the github client",
 }
 
-var ConfigCmd = &cobra.Command{
+var configCmd = &cobra.Command{
 	Use:       "config [config_field] [value]",
 	Short:     "config align",
 	Long:      `configure align`,

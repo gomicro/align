@@ -16,6 +16,8 @@ var (
 )
 
 func init() {
+	RootCmd.AddCommand(pushCmd)
+
 	pushCmd.Flags().StringVarP(&dir, "dir", "d", ".", "directory to push repos from")
 	pushCmd.Flags().BoolVarP(&setUpstream, "set-upstream", "u", false, "set upstream tracking reference")
 }

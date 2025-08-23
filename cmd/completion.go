@@ -17,6 +17,8 @@ var (
 )
 
 func init() {
+	RootCmd.AddCommand(completionCmd)
+
 	completionCmd.Flags().StringVar(&shell, "shell", defaultShell, "desired shell to generate completions for")
 }
 
@@ -30,13 +32,13 @@ func completionFunc(cmd *cobra.Command, args []string) {
 	var err error
 	switch strings.ToLower(shell) {
 	case "bash":
-		err = rootCmd.GenBashCompletion(os.Stdout)
+		err = RootCmd.GenBashCompletion(os.Stdout)
 	case "fish":
-		err = rootCmd.GenFishCompletion(os.Stdout, false)
+		err = RootCmd.GenFishCompletion(os.Stdout, false)
 	case "ps", "powershell", "power_shell":
-		err = rootCmd.GenPowerShellCompletion(os.Stdout)
+		err = RootCmd.GenPowerShellCompletion(os.Stdout)
 	case "zsh":
-		err = rootCmd.GenZshCompletion(os.Stdout)
+		err = RootCmd.GenZshCompletion(os.Stdout)
 	default:
 	}
 

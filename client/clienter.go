@@ -14,4 +14,5 @@ type Clienter interface {
 	GetRepos(ctx context.Context, name string) ([]*github.Repository, error)
 	PullRepos(ctx context.Context, repoDirs []string, args ...string) error
 	PushRepos(ctx context.Context, repoDirs []string, args ...string) error
+	Remotes(ctx context.Context, repoDirs []string, args ...string) error
 }

@@ -56,3 +56,9 @@ func (c *TestClient) PushRepos(ctx context.Context, repoDirs []string, args ...s
 
 	return nil
 }
+
+func (c *TestClient) Remotes(ctx context.Context, repoDirs []string, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "Remotes")
+
+	return nil
+}

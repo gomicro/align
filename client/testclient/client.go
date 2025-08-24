@@ -1,0 +1,58 @@
+package testclient
+
+import (
+	"context"
+
+	"github.com/gomicro/align/client"
+	"github.com/google/go-github/github"
+)
+
+type TestClient struct {
+	CommandsCalled []string
+}
+
+func New() *TestClient {
+	return &TestClient{}
+}
+
+func (c *TestClient) CheckoutRepos(ctx context.Context, repoDirs []string, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "CheckoutRepos")
+
+	return nil
+}
+
+func (c *TestClient) CloneRepos(ctx context.Context) ([]*client.Repository, error) {
+	c.CommandsCalled = append(c.CommandsCalled, "CloneRepos")
+
+	return nil, nil
+}
+
+func (c *TestClient) GetDirs(ctx context.Context, dir string) ([]string, error) {
+	c.CommandsCalled = append(c.CommandsCalled, "GetDirs")
+
+	return nil, nil
+}
+
+func (c *TestClient) GetLogins(ctx context.Context) ([]string, error) {
+	c.CommandsCalled = append(c.CommandsCalled, "GetLogins")
+
+	return nil, nil
+}
+
+func (c *TestClient) GetRepos(ctx context.Context, name string) ([]*github.Repository, error) {
+	c.CommandsCalled = append(c.CommandsCalled, "GetRepos")
+
+	return nil, nil
+}
+
+func (c *TestClient) PullRepos(ctx context.Context, repoDirs []string, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "PullRepos")
+
+	return nil
+}
+
+func (c *TestClient) PushRepos(ctx context.Context, repoDirs []string, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "PushRepos")
+
+	return nil
+}

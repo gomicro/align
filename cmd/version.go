@@ -7,6 +7,7 @@ import (
 )
 
 func init() {
+	RootCmd.AddCommand(versionCmd)
 }
 
 var (

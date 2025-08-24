@@ -24,6 +24,8 @@ var (
 )
 
 func init() {
+	RootCmd.AddCommand(authCmd)
+
 	authCmd.Flags().BoolVarP(&reapprove, "force", "f", false, "force align to reauth")
 }
 

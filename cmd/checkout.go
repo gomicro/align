@@ -11,6 +11,8 @@ import (
 )
 
 func init() {
+	RootCmd.AddCommand(checkoutCmd)
+
 	checkoutCmd.Flags().StringVarP(&dir, "dir", "d", ".", "directory to checkout repos from")
 }
 

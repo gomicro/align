@@ -65,7 +65,7 @@ func New(cfg *config.Config) (*Client, error) {
 			return nil, fmt.Errorf("public keys: %w", err)
 		}
 
-		publicKeys.HostKeyCallbackHelper.HostKeyCallback = ssh.InsecureIgnoreHostKey()
+		publicKeys.HostKeyCallback = ssh.InsecureIgnoreHostKey()
 	} else if cfg.Github.PrivateKeyFile != "" {
 		_, err := os.Stat(cfg.Github.PrivateKeyFile)
 		if err != nil {
@@ -77,7 +77,7 @@ func New(cfg *config.Config) (*Client, error) {
 			return nil, fmt.Errorf("public keys file: %w", err)
 		}
 
-		publicKeys.HostKeyCallbackHelper.HostKeyCallback = ssh.InsecureIgnoreHostKey()
+		publicKeys.HostKeyCallback = ssh.InsecureIgnoreHostKey()
 	}
 
 	var pass *sshgit.Password

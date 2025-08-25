@@ -62,3 +62,21 @@ func (c *TestClient) Remotes(ctx context.Context, repoDirs []string, args ...str
 
 	return nil
 }
+
+func (c *TestClient) SetURLs(ctx context.Context, repoDirs []string, name, baseURL string, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "SetURLs")
+
+	return nil
+}
+
+func (c *TestClient) Add(ctx context.Context, dirs []string, name, baseURL string, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "Add")
+
+	return nil
+}
+
+func (c *TestClient) Remove(ctx context.Context, dirs []string, name string, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "Remove")
+
+	return nil
+}

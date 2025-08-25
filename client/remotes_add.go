@@ -10,10 +10,10 @@ import (
 	"github.com/gosuri/uiprogress"
 )
 
-func (c *Client) Add(ctx context.Context, dirs []string, name, baseURL string, args ...string) error {
+func (c *Client) Add(ctx context.Context, dirs []string, name, baseURL string) error {
 	count := len(dirs)
 
-	args = append([]string{"remote", "add"}, name)
+	args := append([]string{"remote", "add"}, name)
 
 	verbose := Verbose(ctx)
 

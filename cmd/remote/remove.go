@@ -31,7 +31,7 @@ func removeFunc(cmd *cobra.Command, args []string) error {
 		defer uiprogress.Stop()
 	}
 
-	name, args := args[0], args[1:]
+	name := args[0]
 
 	repoDirs, err := clt.GetDirs(ctx, dir)
 	if err != nil {
@@ -39,7 +39,7 @@ func removeFunc(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("get dirs: %w", err)
 	}
 
-	err = clt.Remove(ctx, repoDirs, name, args...)
+	err = clt.Remove(ctx, repoDirs, name)
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("remove: %w", err)

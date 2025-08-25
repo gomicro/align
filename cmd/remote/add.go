@@ -31,7 +31,7 @@ func addFunc(cmd *cobra.Command, args []string) error {
 		defer uiprogress.Stop()
 	}
 
-	name, baseURL, args := args[0], args[1], args[2:]
+	name, baseURL := args[0], args[1]
 
 	repoDirs, err := clt.GetDirs(ctx, dir)
 	if err != nil {
@@ -39,7 +39,7 @@ func addFunc(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("get dirs: %w", err)
 	}
 
-	err = clt.Add(ctx, repoDirs, name, baseURL, args...)
+	err = clt.Add(ctx, repoDirs, name, baseURL)
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("add: %w", err)

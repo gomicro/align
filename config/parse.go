@@ -14,7 +14,7 @@ import (
 func ParseFromFile() (*Config, error) {
 	usr, err := user.Current()
 	if err != nil {
-		return nil, fmt.Errorf("Failed getting home directory: %v", err.Error())
+		return nil, fmt.Errorf("failed getting home directory: %v", err.Error())
 	}
 
 	conf := defaultConfig
@@ -43,12 +43,12 @@ func ParseFromFile() (*Config, error) {
 
 	b, err := os.ReadFile(filepath.Join(usr.HomeDir, confDir, confFile))
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read config file: %v", err.Error())
+		return nil, fmt.Errorf("failed to read config file: %v", err.Error())
 	}
 
 	err = yaml.Unmarshal(b, &conf)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to unmarshal config file: %v", err.Error())
+		return nil, fmt.Errorf("failed to unmarshal config file: %v", err.Error())
 	}
 
 	return &conf, nil
@@ -60,7 +60,7 @@ func ParseFromFile() (*Config, error) {
 func DirExists() (bool, error) {
 	usr, err := user.Current()
 	if err != nil {
-		return false, fmt.Errorf("Failed getting home directory: %v", err.Error())
+		return false, fmt.Errorf("failed getting home directory: %v", err.Error())
 	}
 
 	_, err = os.Stat(filepath.Join(usr.HomeDir, confDir))
@@ -68,7 +68,7 @@ func DirExists() (bool, error) {
 		if os.IsNotExist(err) {
 			return false, nil
 		}
-		return false, fmt.Errorf("Failed to confirm config dir existence: %v", err.Error())
+		return false, fmt.Errorf("failed to confirm config dir existence: %v", err.Error())
 	}
 
 	return true, nil
@@ -80,7 +80,7 @@ func DirExists() (bool, error) {
 func FileExists() (bool, error) {
 	usr, err := user.Current()
 	if err != nil {
-		return false, fmt.Errorf("Failed getting home directory: %v", err.Error())
+		return false, fmt.Errorf("failed getting home directory: %v", err.Error())
 	}
 
 	_, err = os.Stat(filepath.Join(usr.HomeDir, confDir, confFile))
@@ -88,7 +88,7 @@ func FileExists() (bool, error) {
 		if os.IsNotExist(err) {
 			return false, nil
 		}
-		return false, fmt.Errorf("Failed to confirm config file existence: %v", err.Error())
+		return false, fmt.Errorf("failed to confirm config file existence: %v", err.Error())
 	}
 
 	return true, nil

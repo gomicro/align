@@ -10,10 +10,10 @@ import (
 	"github.com/gosuri/uiprogress"
 )
 
-func (c *Client) SetURLs(ctx context.Context, dirs []string, name, baseURL string, args ...string) error {
+func (c *Client) SetURLs(ctx context.Context, dirs []string, name, baseURL string) error {
 	count := len(dirs)
 
-	args = append([]string{"remote", "set-url"}, name)
+	args := append([]string{"remote", "set-url"}, name)
 
 	verbose := Verbose(ctx)
 
@@ -89,9 +89,7 @@ func (c *Client) SetURLs(ctx context.Context, dirs []string, name, baseURL strin
 }
 
 func buildURL(baseURL, dir string) string {
-	if strings.HasSuffix(baseURL, "/") {
-		baseURL = strings.TrimSuffix(baseURL, "/")
-	}
+	baseURL = strings.TrimSuffix(baseURL, "/")
 
 	return fmt.Sprintf("%s/%s.git", baseURL, dir)
 }

@@ -10,10 +10,10 @@ import (
 	"github.com/gosuri/uiprogress"
 )
 
-func (c *Client) Remove(ctx context.Context, dirs []string, name string, args ...string) error {
+func (c *Client) Remove(ctx context.Context, dirs []string, name string) error {
 	count := len(dirs)
 
-	args = append([]string{"remote", "remove"}, name)
+	args := append([]string{"remote", "remove"}, name)
 
 	verbose := Verbose(ctx)
 

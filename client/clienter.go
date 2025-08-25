@@ -15,7 +15,7 @@ type Clienter interface {
 	PullRepos(ctx context.Context, repoDirs []string, args ...string) error
 	PushRepos(ctx context.Context, repoDirs []string, args ...string) error
 	Remotes(ctx context.Context, repoDirs []string, args ...string) error
-	SetURLs(ctx context.Context, repoDirs []string, name, baseURL string, args ...string) error
-	Add(ctx context.Context, dirs []string, name, baseURL string, args ...string) error
-	Remove(ctx context.Context, dirs []string, name string, args ...string) error
+	SetURLs(ctx context.Context, repoDirs []string, name, baseURL string) error
+	Add(ctx context.Context, dirs []string, name, baseURL string) error
+	Remove(ctx context.Context, dirs []string, name string) error
 }

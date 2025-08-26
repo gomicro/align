@@ -12,6 +12,8 @@ import (
 )
 
 var (
+	all         bool
+	force       bool
 	setUpstream bool
 )
 
@@ -19,6 +21,8 @@ func init() {
 	RootCmd.AddCommand(pushCmd)
 
 	pushCmd.Flags().StringVarP(&dir, "dir", "d", ".", "directory to push repos from")
+	pushCmd.Flags().BoolVar(&all, "all", false, "all branches")
+	pushCmd.Flags().BoolVar(&force, "force", false, "force push")
 	pushCmd.Flags().BoolVarP(&setUpstream, "set-upstream", "u", false, "set upstream tracking reference")
 }
 
@@ -47,6 +51,14 @@ func pushFunc(cmd *cobra.Command, args []string) error {
 
 	if setUpstream {
 		args = slices.Insert(args, 0, "--set-upstream")
+	}
+
+	if all {
+		args = slices.Insert(args, 0, "--all")
+	}
+
+	if force {
+		args = slices.Insert(args, 0, "--force")
 	}
 
 	err = clt.PushRepos(ctx, repoDirs, args...)

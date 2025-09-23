@@ -41,3 +41,7 @@ func (c *Client) ListTags(ctx context.Context, dirs []string, args ...string) er
 
 	return nil
 }
+
+func (c *Client) TagRepos(ctx context.Context, dirs []string, args ...string) error {
+	return nil
+}

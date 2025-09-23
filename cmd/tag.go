@@ -55,5 +55,11 @@ func tagFunc(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
+	err = clt.TagRepos(ctx, repoDirs, args...)
+	if err != nil {
+		cmd.SilenceUsage = true
+		return fmt.Errorf("tagging: %w", err)
+	}
+
 	return nil
 }

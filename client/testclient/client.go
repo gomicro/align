@@ -51,6 +51,12 @@ func (c *TestClient) ListBranches(ctx context.Context, repoDirs []string, args .
 	return nil
 }
 
+func (c *TestClient) ListTags(ctx context.Context, repoDirs []string, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "ListTags")
+
+	return nil
+}
+
 func (c *TestClient) PullRepos(ctx context.Context, repoDirs []string, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "PullRepos")
 

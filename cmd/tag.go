@@ -18,6 +18,9 @@ func init() {
 	RootCmd.AddCommand(tagCmd)
 
 	tagCmd.Flags().BoolVarP(&list, "list", "l", false, "list tags in repositories with optional pattern")
+	tagCmd.Flags().BoolVarP(&del, "delete", "d", false, "delete tags in repositories")
+
+	tagCmd.MarkFlagsMutuallyExclusive("list", "delete")
 }
 
 var tagCmd = &cobra.Command{
@@ -31,11 +34,6 @@ var tagCmd = &cobra.Command{
 func tagFunc(cmd *cobra.Command, args []string) error {
 	verbose := viper.GetBool("verbose")
 	ctx := client.WithVerbose(context.Background(), verbose)
-
-	if !verbose {
-		uiprogress.Start()
-		defer uiprogress.Stop()
-	}
 
 	repoDirs, err := clt.GetDirs(ctx, dir)
 	if err != nil {
@@ -53,6 +51,20 @@ func tagFunc(cmd *cobra.Command, args []string) error {
 		}
 
 		return nil
+	}
+
+	if del {
+		if len(args) == 0 {
+			cmd.SilenceUsage = true
+			return fmt.Errorf("tag name is required when deleting a tag")
+		}
+
+		if !verbose {
+			uiprogress.Start()
+			defer uiprogress.Stop()
+		}
+
+		args = append([]string{"--delete"}, args[0])
 	}
 
 	err = clt.TagRepos(ctx, repoDirs, args...)

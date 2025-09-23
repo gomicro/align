@@ -12,6 +12,8 @@ import (
 
 func init() {
 	RootCmd.AddCommand(cloneCmd)
+
+	cloneCmd.Flags().StringVar(&dir, "dir", ".", "directory to clone repos into")
 }
 
 var cloneCmd = &cobra.Command{
@@ -46,7 +48,7 @@ func cloneFunc(cmd *cobra.Command, args []string) error {
 
 	ctx = client.WithRepos(ctx, repos)
 
-	_, err = clt.CloneRepos(ctx)
+	_, err = clt.CloneRepos(ctx, dir)
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("clone repos: %w", err)

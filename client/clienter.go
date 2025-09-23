@@ -9,7 +9,7 @@ import (
 type Clienter interface {
 	Add(ctx context.Context, dirs []string, name, baseURL string) error
 	CheckoutRepos(ctx context.Context, repoDirs []string, args ...string) error
-	CloneRepos(ctx context.Context) ([]*Repository, error)
+	CloneRepos(ctx context.Context, dir string) ([]*Repository, error)
 	GetDirs(ctx context.Context, dir string) ([]string, error)
 	GetLogins(ctx context.Context) ([]string, error)
 	GetRepos(ctx context.Context, name string) ([]*github.Repository, error)

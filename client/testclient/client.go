@@ -21,7 +21,7 @@ func (c *TestClient) CheckoutRepos(ctx context.Context, repoDirs []string, args 
 	return nil
 }
 
-func (c *TestClient) CloneRepos(ctx context.Context) ([]*client.Repository, error) {
+func (c *TestClient) CloneRepos(ctx context.Context, baseDir string) ([]*client.Repository, error) {
 	c.CommandsCalled = append(c.CommandsCalled, "CloneRepos")
 
 	return nil, nil

@@ -18,7 +18,7 @@ var (
 func init() {
 	RootCmd.AddCommand(pullCmd)
 
-	pullCmd.Flags().StringVarP(&dir, "dir", "d", ".", "directory to pull repos from")
+	pullCmd.Flags().StringVar(&dir, "dir", ".", "directory to pull repos from")
 	pullCmd.Flags().BoolVar(&tags, "tags", false, "pull tags")
 }
 

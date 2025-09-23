@@ -20,4 +20,5 @@ type Clienter interface {
 	Remotes(ctx context.Context, repoDirs []string, args ...string) error
 	Remove(ctx context.Context, dirs []string, name string) error
 	SetURLs(ctx context.Context, repoDirs []string, name, baseURL string) error
+	TagRepos(ctx context.Context, repoDirs []string, args ...string) error
 }

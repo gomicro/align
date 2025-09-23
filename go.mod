@@ -10,7 +10,7 @@ require (
 	github.com/gomicro/trust v0.0.1
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/gosuri/uiprogress v0.0.1
-	github.com/spf13/cobra v1.4.0
+	github.com/spf13/cobra v1.10.1
 	github.com/spf13/viper v1.10.1
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
@@ -31,7 +31,7 @@ require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gosuri/uilive v0.0.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
@@ -44,7 +44,7 @@ require (
 	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/cast v1.4.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.0 // indirect
 	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d // indirect
@@ -54,5 +54,5 @@ require (
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

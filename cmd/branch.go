@@ -20,10 +20,10 @@ func init() {
 
 	branchCmd.Flags().BoolVarP(&all, "all", "a", false, "list all branches")
 	branchCmd.Flags().BoolVarP(&del, "delete", "d", false, "delete the branch from the repos")
-	branchCmd.Flags().BoolVar(&delForce, "D", false, "force delete the branch from the repos")
+	branchCmd.Flags().BoolVarP(&delForce, "force-delete", "D", false, "force delete the branch from the repos")
 	branchCmd.Flags().BoolVarP(&force, "force", "f", false, "force the desired action")
 
-	branchCmd.MarkFlagsMutuallyExclusive("all", "delete", "D")
+	branchCmd.MarkFlagsMutuallyExclusive("all", "delete", "force-delete")
 }
 
 var branchCmd = &cobra.Command{
@@ -65,34 +65,27 @@ func branchFunc(cmd *cobra.Command, args []string) error {
 
 		args = append(args, name)
 
-		return deleteBranch(ctx, cmd, args, repoDirs)
+		err := clt.Branches(ctx, repoDirs, args...)
+		if err != nil {
+			cmd.SilenceUsage = true
+			return fmt.Errorf("delete: %w", err)
+		}
+
+		return nil
 	}
 
 	if all {
 		args = append(args, "--all")
 	}
 
-	return listBranches(ctx, cmd, args, repoDirs)
-}
+	// This must be verbose to show anything
+	ctx = client.WithVerbose(ctx, true)
 
-func listBranches(ctx context.Context, cmd *cobra.Command, args []string, repoDirs []string) error {
-	err := clt.ListBranches(ctx, repoDirs, args...)
+	err = clt.Branches(ctx, repoDirs, args...)
 	if err != nil {
 		cmd.SilenceUsage = true
-		return fmt.Errorf("list branches: %w", err)
+		return fmt.Errorf("list: %w", err)
 	}
-
-	return nil
-}
-
-func deleteBranch(ctx context.Context, cmd *cobra.Command, args []string, repoDirs []string) error {
-	/*
-		err := clt.DeleteBranch(ctx, repoDirs, args...)
-		if err != nil {
-			cmd.SilenceUsage = true
-			return fmt.Errorf("delete branch: %w", err)
-		}
-	*/
 
 	return nil
 }

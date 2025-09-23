@@ -20,7 +20,7 @@ var (
 func init() {
 	RootCmd.AddCommand(pushCmd)
 
-	pushCmd.Flags().StringVarP(&dir, "dir", "d", ".", "directory to push repos from")
+	pushCmd.Flags().StringVar(&dir, "dir", ".", "directory to push repos from")
 	pushCmd.Flags().BoolVar(&all, "all", false, "all branches")
 	pushCmd.Flags().BoolVar(&force, "force", false, "force push")
 	pushCmd.Flags().BoolVarP(&setUpstream, "set-upstream", "u", false, "set upstream tracking reference")

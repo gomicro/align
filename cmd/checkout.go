@@ -13,7 +13,7 @@ import (
 func init() {
 	RootCmd.AddCommand(checkoutCmd)
 
-	checkoutCmd.Flags().StringVarP(&dir, "dir", "d", ".", "directory to checkout repos from")
+	checkoutCmd.Flags().StringVar(&dir, "dir", ".", "directory to checkout repos from")
 }
 
 var checkoutCmd = &cobra.Command{

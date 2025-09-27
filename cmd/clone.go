@@ -5,15 +5,21 @@ import (
 	"fmt"
 
 	"github.com/gomicro/align/client"
+	"github.com/google/go-github/github"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+)
+
+var (
+	topics []string
 )
 
 func init() {
 	RootCmd.AddCommand(cloneCmd)
 
 	cloneCmd.Flags().StringVar(&dir, "dir", ".", "directory to clone repos into")
+	cloneCmd.Flags().StringSliceVarP(&topics, "topics", "t", []string{}, "clone only repos with matching topics")
 }
 
 var cloneCmd = &cobra.Command{
@@ -46,6 +52,8 @@ func cloneFunc(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("get repos: %w", err)
 	}
 
+	repos = filterByTopics(repos, topics)
+
 	ctx = client.WithRepos(ctx, repos)
 
 	_, err = clt.CloneRepos(ctx, dir)
@@ -66,4 +74,33 @@ func createCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string
 	}
 
 	return valid, cobra.ShellCompDirectiveNoFileComp
+}
+
+func filterByTopics(repos []*github.Repository, topics []string) []*github.Repository {
+	if len(topics) == 0 {
+		return repos
+	}
+
+	var filtered []*github.Repository
+
+	for _, r := range repos {
+		searchMap := make(map[string]struct{})
+		for i := 0; i < len(r.Topics); i++ {
+			searchMap[r.Topics[i]] = struct{}{}
+		}
+
+		allFound := true
+		for _, t := range topics {
+			if _, ok := searchMap[t]; !ok {
+				allFound = false
+				break
+			}
+		}
+
+		if allFound {
+			filtered = append(filtered, r)
+		}
+	}
+
+	return filtered
 }

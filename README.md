@@ -9,7 +9,8 @@
 Align is a command line tool for managing broader sets of tasks across a set of repos.
 
 # Requirements
-Golang version 1.17 or higher
+
+Golang version 1.23 or higher.
 
 # Installation
 

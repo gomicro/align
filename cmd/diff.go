@@ -13,6 +13,7 @@ var (
 	nameOnly         bool
 	ignoreEmtpy      bool
 	ignoreFilePrefix []string
+	matchExtension   []string
 )
 
 func init() {
@@ -20,9 +21,10 @@ func init() {
 
 	diffCmd.Flags().StringVar(&dir, "dir", ".", "directory to diff repos from")
 
-	diffCmd.Flags().BoolVar(&ignoreEmtpy, "ignore-empty", false, "ignore empty diffs")
-	diffCmd.Flags().StringArrayVar(&ignoreFilePrefix, "ignore-file-prefix", []string{}, "ignore files in diffs with the given prefix")
+	diffCmd.Flags().StringArrayVar(&ignoreFilePrefix, "ignore-file-prefix", []string{}, "ignore files in diffs with the given prefix(es)")
+	diffCmd.Flags().StringArrayVar(&matchExtension, "match-extension", []string{}, "only include files in diffs with the given extension(s)")
 
+	diffCmd.Flags().BoolVar(&ignoreEmtpy, "ignore-empty", false, "ignore empty diffs")
 	diffCmd.Flags().BoolVar(&short, "shortstat", false, "show only the number of changed files, insertions, and deletions")
 	diffCmd.Flags().BoolVar(&nameOnly, "name-only", false, "show only names of changed files")
 
@@ -59,6 +61,7 @@ func diffFunc(cmd *cobra.Command, args []string) error {
 	cfg := &client.DiffConfig{
 		IgnoreEmpty:      ignoreEmtpy,
 		IgnoreFilePrefix: ignoreFilePrefix,
+		MatchExtension:   matchExtension,
 		Args:             args,
 	}
 

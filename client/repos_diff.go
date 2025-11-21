@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
@@ -36,6 +37,9 @@ func (c *Client) DiffRepos(ctx context.Context, dirs []string, cfg *DiffConfig) 
 
 		err := cmd.Run()
 
+		// filter first to have empty check accurate
+		out = filterLines(out, cfg.IgnoreFilePrefix)
+
 		if cfg.IgnoreEmpty && out.Len() == 0 && err == nil {
 			continue
 		}
@@ -52,4 +56,31 @@ func (c *Client) DiffRepos(ctx context.Context, dirs []string, cfg *DiffConfig) 
 	}
 
 	return nil
+}
+
+func filterLines(buf *bytes.Buffer, prefixes []string) *bytes.Buffer {
+	if len(prefixes) == 0 {
+		return buf
+	}
+
+	scanner := bufio.NewScanner(buf)
+	out := &bytes.Buffer{}
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		ignore := false
+		for _, prefix := range prefixes {
+			if strings.HasPrefix(line, prefix) {
+				ignore = true
+				break
+			}
+		}
+
+		if !ignore {
+			out.WriteString(line + "\n")
+		}
+	}
+
+	return out
 }

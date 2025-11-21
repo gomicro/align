@@ -16,6 +16,7 @@ type Clienter interface {
 	GetLogins(ctx context.Context) ([]string, error)
 	GetRepos(ctx context.Context, name string) ([]*github.Repository, error)
 	ListTags(ctx context.Context, repoDirs []string, args ...string) error
+	LogRepos(ctx context.Context, repoDirs []string, ignoreEmtpy bool, args ...string) error
 	PullRepos(ctx context.Context, repoDirs []string, args ...string) error
 	PushRepos(ctx context.Context, repoDirs []string, args ...string) error
 	Remotes(ctx context.Context, repoDirs []string, args ...string) error

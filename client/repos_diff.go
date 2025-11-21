@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
@@ -8,8 +9,14 @@ import (
 	"strings"
 )
 
-func (c *Client) DiffRepos(ctx context.Context, dirs []string, ignoreEmtpy bool, args ...string) error {
-	args = append([]string{"diff"}, args...)
+type DiffConfig struct {
+	IgnoreEmpty      bool
+	IgnoreFilePrefix []string
+	Args             []string
+}
+
+func (c *Client) DiffRepos(ctx context.Context, dirs []string, cfg *DiffConfig) error {
+	args := append([]string{"diff"}, cfg.Args...)
 
 	c.scrb.BeginDescribe("Command")
 	defer c.scrb.EndDescribe()
@@ -30,7 +37,10 @@ func (c *Client) DiffRepos(ctx context.Context, dirs []string, ignoreEmtpy bool,
 
 		err := cmd.Run()
 
-		if ignoreEmtpy && out.Len() == 0 && err == nil {
+		// filter first to have empty check accurate
+		out = filterLines(out, cfg.IgnoreFilePrefix)
+
+		if cfg.IgnoreEmpty && out.Len() == 0 && err == nil {
 			continue
 		}
 
@@ -46,4 +56,31 @@ func (c *Client) DiffRepos(ctx context.Context, dirs []string, ignoreEmtpy bool,
 	}
 
 	return nil
+}
+
+func filterLines(buf *bytes.Buffer, prefixes []string) *bytes.Buffer {
+	if len(prefixes) == 0 {
+		return buf
+	}
+
+	scanner := bufio.NewScanner(buf)
+	out := &bytes.Buffer{}
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		ignore := false
+		for _, prefix := range prefixes {
+			if strings.HasPrefix(line, prefix) {
+				ignore = true
+				break
+			}
+		}
+
+		if !ignore {
+			out.WriteString(line + "\n")
+		}
+	}
+
+	return out
 }

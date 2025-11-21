@@ -9,12 +9,14 @@ import (
 
 var (
 	oneline bool
+	noColor bool
 )
 
 func init() {
 	RootCmd.AddCommand(logCmd)
 
 	logCmd.Flags().BoolVar(&oneline, "oneline", false, "Show each commit on a single line")
+	logCmd.Flags().BoolVar(&noColor, "no-color", false, "Disable color output")
 	logCmd.Flags().BoolVar(&ignoreEmtpy, "ignore-empty", false, "Ignore empty repositories")
 }
 
@@ -40,8 +42,9 @@ func logFunc(cmd *cobra.Command, args []string) error {
 		args = append(args, "--oneline")
 	}
 
-	// TODO: Add the option to disable color as well
-	args = append(args, "--color")
+	if !noColor {
+		args = append(args, "--color")
+	}
 
 	err = clt.LogRepos(ctx, repoDirs, ignoreEmtpy, args...)
 	if err != nil {

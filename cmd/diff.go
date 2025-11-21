@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/gomicro/align/client"
 	"github.com/spf13/cobra"
 )
 
@@ -52,7 +53,12 @@ func diffFunc(cmd *cobra.Command, args []string) error {
 		args = append(args, "--name-only")
 	}
 
-	err = clt.DiffRepos(ctx, repoDirs, ignoreEmtpy, args...)
+	cfg := &client.DiffConfig{
+		IgnoreEmpty:      ignoreEmtpy,
+		Args:             args,
+	}
+
+	err = clt.DiffRepos(ctx, repoDirs, cfg)
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("diff repos: %w", err)

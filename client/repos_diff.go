@@ -8,8 +8,13 @@ import (
 	"strings"
 )
 
-func (c *Client) DiffRepos(ctx context.Context, dirs []string, ignoreEmtpy bool, args ...string) error {
-	args = append([]string{"diff"}, args...)
+type DiffConfig struct {
+	IgnoreEmpty      bool
+	Args             []string
+}
+
+func (c *Client) DiffRepos(ctx context.Context, dirs []string, cfg *DiffConfig) error {
+	args := append([]string{"diff"}, cfg.Args...)
 
 	c.scrb.BeginDescribe("Command")
 	defer c.scrb.EndDescribe()
@@ -30,7 +35,7 @@ func (c *Client) DiffRepos(ctx context.Context, dirs []string, ignoreEmtpy bool,
 
 		err := cmd.Run()
 
-		if ignoreEmtpy && out.Len() == 0 && err == nil {
+		if cfg.IgnoreEmpty && out.Len() == 0 && err == nil {
 			continue
 		}
 

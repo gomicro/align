@@ -23,9 +23,10 @@ func init() {
 }
 
 var diffCmd = &cobra.Command{
-	Use:              "diff",
-	Short:            "Diff all repos in a directory",
-	Long:             `Diff all repos in a directory. Since commit hashes would not be the same between multiple repos, this command really only makes sense when used with two branch names or two tags.`,
+	Use:   "diff [flags] <branch|tag> <branch|tag>",
+	Short: "Diff all repos in a directory",
+	Long: `Diff all repos in a directory. Since commit hashes would not be the same between multiple repos,
+this command really only makes sense when used with two branch names or two tags.`,
 	Args:             cobra.ExactArgs(2),
 	PersistentPreRun: setupClient,
 	RunE:             diffFunc,

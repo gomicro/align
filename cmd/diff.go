@@ -8,14 +8,18 @@ import (
 )
 
 var (
-	short    bool
-	nameOnly bool
+	short       bool
+	nameOnly    bool
+	ignoreEmtpy bool
 )
 
 func init() {
 	RootCmd.AddCommand(diffCmd)
 
 	diffCmd.Flags().StringVar(&dir, "dir", ".", "directory to diff repos from")
+
+	diffCmd.Flags().BoolVar(&ignoreEmtpy, "ignore-empty", false, "ignore empty diffs")
+
 	diffCmd.Flags().BoolVar(&short, "shortstat", false, "show only the number of changed files, insertions, and deletions")
 	diffCmd.Flags().BoolVar(&nameOnly, "name-only", false, "show only names of changed files")
 
@@ -48,7 +52,7 @@ func diffFunc(cmd *cobra.Command, args []string) error {
 		args = append(args, "--name-only")
 	}
 
-	err = clt.DiffRepos(ctx, repoDirs, args...)
+	err = clt.DiffRepos(ctx, repoDirs, ignoreEmtpy, args...)
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("diff repos: %w", err)

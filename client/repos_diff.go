@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func (c *Client) DiffRepos(ctx context.Context, dirs []string, args ...string) error {
+func (c *Client) DiffRepos(ctx context.Context, dirs []string, ignoreEmtpy bool, args ...string) error {
 	args = append([]string{"diff"}, args...)
 
 	c.scrb.BeginDescribe("Command")
@@ -29,6 +29,10 @@ func (c *Client) DiffRepos(ctx context.Context, dirs []string, args ...string) e
 		cmd.Dir = dir
 
 		err := cmd.Run()
+
+		if ignoreEmtpy && out.Len() == 0 && err == nil {
+			continue
+		}
 
 		c.scrb.BeginDescribe(dir)
 		if err != nil {

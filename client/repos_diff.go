@@ -10,6 +10,7 @@ import (
 
 type DiffConfig struct {
 	IgnoreEmpty      bool
+	IgnoreFilePrefix []string
 	Args             []string
 }
 

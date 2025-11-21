@@ -104,3 +104,9 @@ func (c *TestClient) DiffRepos(ctx context.Context, repoDirs []string, cfg *clie
 
 	return nil
 }
+
+func (c *TestClient) LogRepos(ctx context.Context, repoDirs []string, ignoreEmtpy bool, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "LogRepos")
+
+	return nil
+}

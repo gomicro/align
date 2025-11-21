@@ -98,3 +98,9 @@ func (c *TestClient) TagRepos(ctx context.Context, repoDirs []string, args ...st
 
 	return nil
 }
+
+func (c *TestClient) DiffRepos(ctx context.Context, repoDirs []string, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "DiffRepos")
+
+	return nil
+}

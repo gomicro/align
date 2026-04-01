@@ -24,11 +24,39 @@ func init() {
 }
 
 var tagCmd = &cobra.Command{
-	Use:              "tag",
-	Short:            "Create, list, or delete tags in repositories",
-	Long:             `Create, list, or delete tags in repositories`,
-	PersistentPreRun: setupClient,
-	RunE:             tagFunc,
+	Use:               "tag",
+	Short:             "Create, list, or delete tags in repositories",
+	Long:              `Create, list, or delete tags in repositories`,
+	ValidArgsFunction: tagCmdValidArgsFunc,
+	PersistentPreRun:  setupClient,
+	RunE:              tagFunc,
+}
+
+func tagCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) >= 1 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	isDelete, _ := cmd.Flags().GetBool("delete")
+	if !isDelete {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	setupClient(cmd, args)
+
+	ctx := context.Background()
+
+	repoDirs, err := clt.GetDirs(ctx, dir)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	names, err := clt.GetTagNames(ctx, repoDirs)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	return names, cobra.ShellCompDirectiveNoFileComp
 }
 
 func tagFunc(cmd *cobra.Command, args []string) error {

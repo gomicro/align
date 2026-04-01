@@ -27,11 +27,41 @@ func init() {
 }
 
 var branchCmd = &cobra.Command{
-	Use:              "branch",
-	Short:            "manage branches for a set of repositories",
-	Long:             `manage branches for a set of repositories`,
-	PersistentPreRun: setupClient,
-	RunE:             branchFunc,
+	Use:               "branch",
+	Short:             "manage branches for a set of repositories",
+	Long:              `manage branches for a set of repositories`,
+	ValidArgsFunction: branchCmdValidArgsFunc,
+	PersistentPreRun:  setupClient,
+	RunE:              branchFunc,
+}
+
+func branchCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) >= 1 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	isDelete, _ := cmd.Flags().GetBool("delete")
+	isForceDelete, _ := cmd.Flags().GetBool("force-delete")
+
+	if !isDelete && !isForceDelete {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	setupClient(cmd, args)
+
+	ctx := context.Background()
+
+	repoDirs, err := clt.GetDirs(ctx, dir)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	names, err := clt.GetBranchNames(ctx, repoDirs)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	return names, cobra.ShellCompDirectiveNoFileComp
 }
 
 func branchFunc(cmd *cobra.Command, args []string) error {

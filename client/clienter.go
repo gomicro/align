@@ -12,9 +12,13 @@ type Clienter interface {
 	CheckoutRepos(ctx context.Context, repoDirs []string, args ...string) error
 	CloneRepos(ctx context.Context, dir string) ([]*Repository, error)
 	DiffRepos(ctx context.Context, repoDirs []string, cfg *DiffConfig) error
+	GetBranchAndTagNames(ctx context.Context, dirs []string) ([]string, error)
+	GetBranchNames(ctx context.Context, dirs []string) ([]string, error)
 	GetDirs(ctx context.Context, dir string) ([]string, error)
 	GetLogins(ctx context.Context) ([]string, error)
+	GetRemoteNames(ctx context.Context, dirs []string) ([]string, error)
 	GetRepos(ctx context.Context, name string) ([]*github.Repository, error)
+	GetTagNames(ctx context.Context, dirs []string) ([]string, error)
 	ListTags(ctx context.Context, repoDirs []string, args ...string) error
 	LogRepos(ctx context.Context, repoDirs []string, ignoreEmtpy bool, args ...string) error
 	PullRepos(ctx context.Context, repoDirs []string, args ...string) error

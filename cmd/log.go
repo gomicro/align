@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -25,8 +26,49 @@ var logCmd = &cobra.Command{
 	Short: "Show commit logs for all repos in a directory",
 	Long: `Show commit logs all repos in a directory. Since commit hashes would not be the same between
 multiple repos this command really only makes sense when used with two branch names or two tags.`,
-	PersistentPreRun: setupClient,
-	RunE:             logFunc,
+	ValidArgsFunction: logCmdValidArgsFunc,
+	PersistentPreRun:  setupClient,
+	RunE:              logFunc,
+}
+
+func logCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) >= 1 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	setupClient(cmd, args)
+
+	ctx := context.Background()
+
+	repoDirs, err := clt.GetDirs(ctx, dir)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	names, err := clt.GetBranchAndTagNames(ctx, repoDirs)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	// When the user has typed a range separator, complete only the ref after it
+	// and return completions with the already-typed prefix preserved.
+	var rangePrefix string
+	if idx := strings.LastIndex(toComplete, "..."); idx != -1 {
+		rangePrefix = toComplete[:idx+3]
+	} else if idx := strings.LastIndex(toComplete, ".."); idx != -1 {
+		rangePrefix = toComplete[:idx+2]
+	}
+
+	if rangePrefix != "" {
+		completions := make([]string, len(names))
+		for i, name := range names {
+			completions[i] = rangePrefix + name
+		}
+
+		return completions, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	return names, cobra.ShellCompDirectiveNoFileComp
 }
 
 func logFunc(cmd *cobra.Command, args []string) error {

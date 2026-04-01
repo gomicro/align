@@ -25,6 +25,7 @@ func init() {
 	diffCmd.Flags().StringArrayVar(&matchExtension, "match-extension", []string{}, "only include files in diffs with the given extension(s)")
 
 	diffCmd.Flags().BoolVar(&ignoreEmtpy, "ignore-empty", false, "ignore empty diffs")
+	diffCmd.Flags().BoolVar(&noColor, "no-color", false, "disable color output")
 	diffCmd.Flags().BoolVar(&short, "shortstat", false, "show only the number of changed files, insertions, and deletions")
 	diffCmd.Flags().BoolVar(&nameOnly, "name-only", false, "show only names of changed files")
 
@@ -33,11 +34,13 @@ func init() {
 }
 
 var diffCmd = &cobra.Command{
-	Use:   "diff [flags] <branch|tag> <branch|tag>",
+	Use:   "diff [flags] [<branch|tag> [<branch|tag>]]",
 	Short: "Diff all repos in a directory",
-	Long: `Diff all repos in a directory. Since commit hashes would not be the same between multiple repos,
-this command really only makes sense when used with two branch names or two tags.`,
-	Args:              cobra.ExactArgs(2),
+	Long: `Diff all repos in a directory. With no arguments, shows unstaged working tree changes
+across all repos, equivalent to a bare 'git diff'. With two arguments, diffs between
+two branches or tags. Since commit hashes would not be the same between multiple repos,
+two-argument usage really only makes sense with branch names or tags.`,
+	Args:              cobra.RangeArgs(0, 2),
 	ValidArgsFunction: diffCmdValidArgsFunc,
 	PersistentPreRun:  setupClient,
 	RunE:              diffFunc,
@@ -84,6 +87,10 @@ func diffFunc(cmd *cobra.Command, args []string) error {
 		args = append(args, "--shortstat")
 	case nameOnly:
 		args = append(args, "--name-only")
+	}
+
+	if !noColor {
+		args = append([]string{"--color"}, args...)
 	}
 
 	cfg := &client.DiffConfig{

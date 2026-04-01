@@ -27,11 +27,48 @@ func init() {
 }
 
 var pushCmd = &cobra.Command{
-	Use:              "push",
-	Short:            "Push all repos in a directory",
-	Long:             `Push all repos in a directory.`,
-	PersistentPreRun: setupClient,
-	RunE:             pushFunc,
+	Use:               "push",
+	Short:             "Push all repos in a directory",
+	Long:              `Push all repos in a directory.`,
+	ValidArgsFunction: pushCmdValidArgsFunc,
+	PersistentPreRun:  setupClient,
+	RunE:              pushFunc,
+}
+
+func pushCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	setupClient(cmd, args)
+
+	pushDir, err := cmd.Flags().GetString("dir")
+	if err != nil {
+		pushDir = "."
+	}
+
+	ctx := context.Background()
+
+	repoDirs, err := clt.GetDirs(ctx, pushDir)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	switch len(args) {
+	case 0:
+		names, err := clt.GetRemoteNames(ctx, repoDirs)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+
+		return names, cobra.ShellCompDirectiveNoFileComp
+
+	case 1:
+		names, err := clt.GetBranchAndTagNames(ctx, repoDirs)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+
+		return names, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	return nil, cobra.ShellCompDirectiveNoFileComp
 }
 
 func pushFunc(cmd *cobra.Command, args []string) error {

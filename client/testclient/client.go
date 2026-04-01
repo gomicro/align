@@ -27,6 +27,12 @@ func (c *TestClient) CloneRepos(ctx context.Context, baseDir string) ([]*client.
 	return nil, nil
 }
 
+func (c *TestClient) GetBranchNames(ctx context.Context, dirs []string) ([]string, error) {
+	c.CommandsCalled = append(c.CommandsCalled, "GetBranchNames")
+
+	return nil, nil
+}
+
 func (c *TestClient) GetBranchAndTagNames(ctx context.Context, dirs []string) ([]string, error) {
 	c.CommandsCalled = append(c.CommandsCalled, "GetBranchAndTagNames")
 
@@ -47,6 +53,12 @@ func (c *TestClient) GetLogins(ctx context.Context) ([]string, error) {
 
 func (c *TestClient) GetRemoteNames(ctx context.Context, dirs []string) ([]string, error) {
 	c.CommandsCalled = append(c.CommandsCalled, "GetRemoteNames")
+
+	return nil, nil
+}
+
+func (c *TestClient) GetTagNames(ctx context.Context, dirs []string) ([]string, error) {
+	c.CommandsCalled = append(c.CommandsCalled, "GetTagNames")
 
 	return nil, nil
 }

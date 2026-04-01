@@ -37,9 +37,37 @@ var diffCmd = &cobra.Command{
 	Short: "Diff all repos in a directory",
 	Long: `Diff all repos in a directory. Since commit hashes would not be the same between multiple repos,
 this command really only makes sense when used with two branch names or two tags.`,
-	Args:             cobra.ExactArgs(2),
-	PersistentPreRun: setupClient,
-	RunE:             diffFunc,
+	Args:              cobra.ExactArgs(2),
+	ValidArgsFunction: diffCmdValidArgsFunc,
+	PersistentPreRun:  setupClient,
+	RunE:              diffFunc,
+}
+
+func diffCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) >= 2 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	setupClient(cmd, args)
+
+	diffDir, err := cmd.Flags().GetString("dir")
+	if err != nil {
+		diffDir = "."
+	}
+
+	ctx := context.Background()
+
+	repoDirs, err := clt.GetDirs(ctx, diffDir)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	names, err := clt.GetBranchAndTagNames(ctx, repoDirs)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	return names, cobra.ShellCompDirectiveNoFileComp
 }
 
 func diffFunc(cmd *cobra.Command, args []string) error {

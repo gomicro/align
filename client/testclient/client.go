@@ -21,6 +21,12 @@ func (c *TestClient) CheckoutRepos(ctx context.Context, repoDirs []string, args 
 	return nil
 }
 
+func (c *TestClient) CommitRepos(ctx context.Context, dirs []string, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "CommitRepos")
+
+	return nil
+}
+
 func (c *TestClient) CloneRepos(ctx context.Context, baseDir string) ([]*client.Repository, error) {
 	c.CommandsCalled = append(c.CommandsCalled, "CloneRepos")
 

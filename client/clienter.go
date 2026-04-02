@@ -11,6 +11,7 @@ type Clienter interface {
 	Branches(ctx context.Context, repoDirs []string, args ...string) error
 	CheckoutRepos(ctx context.Context, repoDirs []string, args ...string) error
 	CloneRepos(ctx context.Context, dir string) ([]*Repository, error)
+	CommitRepos(ctx context.Context, dirs []string, args ...string) error
 	DiffRepos(ctx context.Context, repoDirs []string, cfg *DiffConfig) error
 	GetBranchAndTagNames(ctx context.Context, dirs []string) ([]string, error)
 	GetBranchNames(ctx context.Context, dirs []string) ([]string, error)

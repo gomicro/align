@@ -123,6 +123,12 @@ func (c *TestClient) StatusRepos(ctx context.Context, dirs []string, ignoreEmpty
 	return nil
 }
 
+func (c *TestClient) StageFiles(ctx context.Context, dirs []string, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "StageFiles")
+
+	return nil
+}
+
 func (c *TestClient) TagRepos(ctx context.Context, repoDirs []string, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "TagRepos")
 

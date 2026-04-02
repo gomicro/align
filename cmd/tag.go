@@ -3,6 +3,8 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os/exec"
+	"strings"
 
 	"github.com/gomicro/align/client"
 	"github.com/gosuri/uiprogress"
@@ -11,7 +13,9 @@ import (
 )
 
 var (
-	list bool
+	list   bool
+	sign   bool
+	noSign bool
 )
 
 func init() {
@@ -19,8 +23,12 @@ func init() {
 
 	tagCmd.Flags().BoolVarP(&list, "list", "l", false, "list tags in repositories with optional pattern")
 	tagCmd.Flags().BoolVarP(&del, "delete", "d", false, "delete tags in repositories")
+	tagCmd.Flags().StringVarP(&message, "message", "m", "", "message for an annotated tag")
+	tagCmd.Flags().BoolVarP(&sign, "sign", "s", false, "create a GPG-signed tag (requires --message)")
+	tagCmd.Flags().BoolVar(&noSign, "no-sign", false, "do not GPG-sign the tag, overriding tag.gpgSign config")
 
 	tagCmd.MarkFlagsMutuallyExclusive("list", "delete")
+	tagCmd.MarkFlagsMutuallyExclusive("sign", "no-sign")
 }
 
 var tagCmd = &cobra.Command{
@@ -93,6 +101,31 @@ func tagFunc(cmd *cobra.Command, args []string) error {
 		}
 
 		args = append([]string{"--delete"}, args[0])
+	} else {
+		if sign && message == "" {
+			cmd.SilenceUsage = true
+			return fmt.Errorf("--message is required when creating a signed tag")
+		}
+
+		if !noSign && message == "" {
+			out, _ := exec.Command("git", "config", "--get", "tag.gpgSign").Output()
+			if strings.TrimSpace(string(out)) == "true" {
+				cmd.SilenceUsage = true
+				return fmt.Errorf("tag.gpgSign is enabled in git config; provide --message (-m) or use --no-sign to override")
+			}
+		}
+
+		if sign {
+			args = append(args, "--sign")
+		}
+
+		if noSign {
+			args = append(args, "--no-sign")
+		}
+
+		if message != "" {
+			args = append(args, "--message", message)
+		}
 	}
 
 	err = clt.TagRepos(ctx, repoDirs, args...)

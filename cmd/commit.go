@@ -24,6 +24,8 @@ func init() {
 	commitCmd.Flags().BoolVarP(&all, "all", "a", false, "stage all tracked modified and deleted files before committing")
 	commitCmd.Flags().BoolVar(&amend, "amend", false, "amend the last commit")
 	commitCmd.Flags().BoolVar(&noEdit, "no-edit", false, "use the existing commit message when amending")
+
+	commitCmd.MarkFlagRequired("message") //nolint:errcheck
 }
 
 var commitCmd = &cobra.Command{
@@ -35,10 +37,6 @@ var commitCmd = &cobra.Command{
 }
 
 func commitFunc(cmd *cobra.Command, args []string) error {
-	if !amend && message == "" {
-		return fmt.Errorf("commit message required: use -m \"message\" or --amend")
-	}
-
 	verbose := viper.GetBool("verbose")
 	ctx := client.WithVerbose(context.Background(), verbose)
 
@@ -57,9 +55,7 @@ func commitFunc(cmd *cobra.Command, args []string) error {
 		args = append(args, "--all")
 	}
 
-	if message != "" {
-		args = append(args, "-m", message)
-	}
+	args = append(args, "-m", message)
 
 	if amend {
 		args = append(args, "--amend")

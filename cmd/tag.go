@@ -12,6 +12,7 @@ import (
 
 var (
 	list bool
+	sign bool
 )
 
 func init() {
@@ -19,6 +20,8 @@ func init() {
 
 	tagCmd.Flags().BoolVarP(&list, "list", "l", false, "list tags in repositories with optional pattern")
 	tagCmd.Flags().BoolVarP(&del, "delete", "d", false, "delete tags in repositories")
+	tagCmd.Flags().StringVarP(&message, "message", "m", "", "message for an annotated tag")
+	tagCmd.Flags().BoolVarP(&sign, "sign", "s", false, "create a GPG-signed tag (requires --message)")
 
 	tagCmd.MarkFlagsMutuallyExclusive("list", "delete")
 }
@@ -93,6 +96,19 @@ func tagFunc(cmd *cobra.Command, args []string) error {
 		}
 
 		args = append([]string{"--delete"}, args[0])
+	} else {
+		if sign && message == "" {
+			cmd.SilenceUsage = true
+			return fmt.Errorf("--message is required when creating a signed tag")
+		}
+
+		if sign {
+			args = append(args, "--sign")
+		}
+
+		if message != "" {
+			args = append(args, "--message", message)
+		}
 	}
 
 	err = clt.TagRepos(ctx, repoDirs, args...)

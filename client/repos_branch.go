@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -74,6 +75,8 @@ func (c *Client) Branches(ctx context.Context, dirs []string, args ...string) er
 			})
 	}
 
+	var errs []error
+
 	for _, dir := range dirs {
 		currRepo = fmt.Sprintf("\nCurrent Repo: %v", dir)
 
@@ -86,10 +89,6 @@ func (c *Client) Branches(ctx context.Context, dirs []string, args ...string) er
 		cmd.Dir = dir
 
 		err := cmd.Run()
-		if err != nil && !verbose {
-			return fmt.Errorf("branch: %w", err) // TODO: collect errors and return them all
-		}
-
 		if verbose {
 			c.scrb.BeginDescribe(dir)
 			if err != nil {
@@ -101,11 +100,15 @@ func (c *Client) Branches(ctx context.Context, dirs []string, args ...string) er
 
 			c.scrb.EndDescribe()
 		} else {
+			if err != nil {
+				errs = append(errs, fmt.Errorf("%s: %w: %s", dir, err, strings.TrimSpace(errout.String())))
+			}
+
 			bar.Incr()
 		}
 	}
 
 	currRepo = ""
 
-	return nil
+	return errors.Join(errs...)
 }

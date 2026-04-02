@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	list bool
-	sign bool
+	list   bool
+	sign   bool
+	noSign bool
 )
 
 func init() {
@@ -22,8 +23,10 @@ func init() {
 	tagCmd.Flags().BoolVarP(&del, "delete", "d", false, "delete tags in repositories")
 	tagCmd.Flags().StringVarP(&message, "message", "m", "", "message for an annotated tag")
 	tagCmd.Flags().BoolVarP(&sign, "sign", "s", false, "create a GPG-signed tag (requires --message)")
+	tagCmd.Flags().BoolVar(&noSign, "no-sign", false, "do not GPG-sign the tag, overriding tag.gpgSign config")
 
 	tagCmd.MarkFlagsMutuallyExclusive("list", "delete")
+	tagCmd.MarkFlagsMutuallyExclusive("sign", "no-sign")
 }
 
 var tagCmd = &cobra.Command{
@@ -104,6 +107,10 @@ func tagFunc(cmd *cobra.Command, args []string) error {
 
 		if sign {
 			args = append(args, "--sign")
+		}
+
+		if noSign {
+			args = append(args, "--no-sign")
 		}
 
 		if message != "" {

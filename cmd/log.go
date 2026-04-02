@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gomicro/align/client"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -72,7 +74,8 @@ func logCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) (
 }
 
 func logFunc(cmd *cobra.Command, args []string) error {
-	ctx := context.Background()
+	verbose := viper.GetBool("verbose")
+	ctx := client.WithVerbose(context.Background(), verbose)
 
 	repoDirs, err := clt.GetDirs(ctx, dir)
 	if err != nil {

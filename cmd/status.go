@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/gomicro/align/client"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func init() {
@@ -24,7 +26,8 @@ var statusCmd = &cobra.Command{
 }
 
 func statusFunc(cmd *cobra.Command, args []string) error {
-	ctx := context.Background()
+	verbose := viper.GetBool("verbose")
+	ctx := client.WithVerbose(context.Background(), verbose)
 
 	repoDirs, err := clt.GetDirs(ctx, dir)
 	if err != nil {

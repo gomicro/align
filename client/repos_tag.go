@@ -15,9 +15,13 @@ func (c *Client) ListTags(ctx context.Context, dirs []string, args ...string) er
 
 	verbose := Verbose(ctx)
 	if verbose {
-		c.scrb.BeginDescribe("Running with command:")
-		c.scrb.Print(strings.Join(append([]string{"git"}, args...), " "))
-		c.scrb.EndDescribe()
+		c.scrb.BeginDescribe("Command")
+		defer c.scrb.EndDescribe()
+
+		c.scrb.Print(fmt.Sprintf("git %s", strings.Join(args, " ")))
+
+		c.scrb.BeginDescribe("directories")
+		defer c.scrb.EndDescribe()
 	}
 
 	for _, dir := range dirs {

@@ -81,15 +81,15 @@ func tagFunc(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
+	if !verbose {
+		uiprogress.Start()
+		defer uiprogress.Stop()
+	}
+
 	if del {
 		if len(args) == 0 {
 			cmd.SilenceUsage = true
 			return fmt.Errorf("tag name is required when deleting a tag")
-		}
-
-		if !verbose {
-			uiprogress.Start()
-			defer uiprogress.Stop()
 		}
 
 		args = append([]string{"--delete"}, args[0])

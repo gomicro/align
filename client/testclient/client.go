@@ -117,6 +117,12 @@ func (c *TestClient) Remove(ctx context.Context, dirs []string, name string) err
 	return nil
 }
 
+func (c *TestClient) StatusRepos(ctx context.Context, dirs []string, ignoreEmpty bool, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "StatusRepos")
+
+	return nil
+}
+
 func (c *TestClient) TagRepos(ctx context.Context, repoDirs []string, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "TagRepos")
 

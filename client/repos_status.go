@@ -11,13 +11,16 @@ import (
 func (c *Client) StatusRepos(ctx context.Context, dirs []string, ignoreEmpty bool, args ...string) error {
 	args = append([]string{"status"}, args...)
 
-	c.scrb.BeginDescribe("Command")
-	defer c.scrb.EndDescribe()
+	verbose := Verbose(ctx)
+	if verbose {
+		c.scrb.BeginDescribe("Command")
+		defer c.scrb.EndDescribe()
 
-	c.scrb.Print(fmt.Sprintf("git %s", strings.Join(args, " ")))
+		c.scrb.Print(fmt.Sprintf("git %s", strings.Join(args, " ")))
 
-	c.scrb.BeginDescribe("directories")
-	defer c.scrb.EndDescribe()
+		c.scrb.BeginDescribe("directories")
+		defer c.scrb.EndDescribe()
+	}
 
 	for _, dir := range dirs {
 		out := &bytes.Buffer{}

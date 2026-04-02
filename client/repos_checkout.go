@@ -11,10 +11,6 @@ import (
 	"github.com/gosuri/uiprogress"
 )
 
-var (
-	ErrUnstagedChanges = errors.New("unstanged changes")
-)
-
 func (c *Client) CheckoutRepos(ctx context.Context, dirs []string, args ...string) error {
 	count := len(dirs)
 	args = append([]string{"checkout"}, args...)
@@ -44,7 +40,8 @@ func (c *Client) CheckoutRepos(ctx context.Context, dirs []string, args ...strin
 			})
 	}
 
-	unstagedRepos := []string{}
+	var errs []error
+
 	for _, dir := range dirs {
 		currRepo = fmt.Sprintf("\nCurrent Repo: %v", dir)
 
@@ -57,15 +54,6 @@ func (c *Client) CheckoutRepos(ctx context.Context, dirs []string, args ...strin
 		cmd.Dir = dir
 
 		err := cmd.Run()
-		if err != nil && !verbose {
-			if errors.Is(err, ErrUnstagedChanges) {
-				unstagedRepos = append(unstagedRepos, dir)
-				continue
-			}
-
-			return fmt.Errorf("checkout repo: %w", err) //TODO: collect errors and return them all
-		}
-
 		if verbose {
 			c.scrb.BeginDescribe(dir)
 			if err != nil {
@@ -77,15 +65,15 @@ func (c *Client) CheckoutRepos(ctx context.Context, dirs []string, args ...strin
 
 			c.scrb.EndDescribe()
 		} else {
+			if err != nil {
+				errs = append(errs, fmt.Errorf("%s: %w: %s", dir, err, strings.TrimSpace(errout.String())))
+			}
+
 			bar.Incr()
 		}
 	}
 
 	currRepo = ""
 
-	if len(unstagedRepos) > 0 {
-		return fmt.Errorf("unstaged repos needing manual attention: [%s]", strings.Join(unstagedRepos, ", "))
-	}
-
-	return nil
+	return errors.Join(errs...)
 }

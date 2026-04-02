@@ -25,7 +25,7 @@ func init() {
 	commitCmd.Flags().BoolVar(&amend, "amend", false, "amend the last commit")
 	commitCmd.Flags().BoolVar(&noEdit, "no-edit", false, "use the existing commit message when amending")
 
-	commitCmd.MarkFlagRequired("message")
+	commitCmd.MarkFlagRequired("message") //nolint:errcheck
 }
 
 var commitCmd = &cobra.Command{

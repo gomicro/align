@@ -6,6 +6,7 @@ import (
 
 	"github.com/gomicro/align/client"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -74,7 +75,8 @@ func diffCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) 
 }
 
 func diffFunc(cmd *cobra.Command, args []string) error {
-	ctx := context.Background()
+	verbose := viper.GetBool("verbose")
+	ctx := client.WithVerbose(context.Background(), verbose)
 
 	repoDirs, err := clt.GetDirs(ctx, dir)
 	if err != nil {

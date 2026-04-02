@@ -21,6 +21,12 @@ func (c *TestClient) CheckoutRepos(ctx context.Context, repoDirs []string, args 
 	return nil
 }
 
+func (c *TestClient) CommitRepos(ctx context.Context, dirs []string, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "CommitRepos")
+
+	return nil
+}
+
 func (c *TestClient) CloneRepos(ctx context.Context, baseDir string) ([]*client.Repository, error) {
 	c.CommandsCalled = append(c.CommandsCalled, "CloneRepos")
 
@@ -113,6 +119,18 @@ func (c *TestClient) Add(ctx context.Context, dirs []string, name, baseURL strin
 
 func (c *TestClient) Remove(ctx context.Context, dirs []string, name string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "Remove")
+
+	return nil
+}
+
+func (c *TestClient) StatusRepos(ctx context.Context, dirs []string, ignoreEmpty bool, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "StatusRepos")
+
+	return nil
+}
+
+func (c *TestClient) StageFiles(ctx context.Context, dirs []string, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "StageFiles")
 
 	return nil
 }

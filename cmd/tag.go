@@ -3,6 +3,8 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os/exec"
+	"strings"
 
 	"github.com/gomicro/align/client"
 	"github.com/gosuri/uiprogress"
@@ -103,6 +105,14 @@ func tagFunc(cmd *cobra.Command, args []string) error {
 		if sign && message == "" {
 			cmd.SilenceUsage = true
 			return fmt.Errorf("--message is required when creating a signed tag")
+		}
+
+		if !noSign && message == "" {
+			out, _ := exec.Command("git", "config", "--get", "tag.gpgSign").Output()
+			if strings.TrimSpace(string(out)) == "true" {
+				cmd.SilenceUsage = true
+				return fmt.Errorf("tag.gpgSign is enabled in git config; provide --message (-m) or use --no-sign to override")
+			}
 		}
 
 		if sign {

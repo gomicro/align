@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gomicro/align/client"
+	ctxhelper "github.com/gomicro/align/client/context"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -38,7 +38,7 @@ var commitCmd = &cobra.Command{
 
 func commitFunc(cmd *cobra.Command, args []string) error {
 	verbose := viper.GetBool("verbose")
-	ctx := client.WithVerbose(context.Background(), verbose)
+	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
 
 	if !verbose {
 		uiprogress.Start()

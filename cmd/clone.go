@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gomicro/align/client"
+	ctxhelper "github.com/gomicro/align/client/context"
 	"github.com/google/go-github/github"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
@@ -34,7 +34,7 @@ var cloneCmd = &cobra.Command{
 
 func cloneFunc(cmd *cobra.Command, args []string) error {
 	verbose := viper.GetBool("verbose")
-	ctx := client.WithVerbose(context.Background(), verbose)
+	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
 
 	if !verbose {
 		uiprogress.Start()
@@ -54,7 +54,7 @@ func cloneFunc(cmd *cobra.Command, args []string) error {
 
 	repos = filterByTopics(repos, topics)
 
-	ctx = client.WithRepos(ctx, repos)
+	ctx = ctxhelper.WithRepos(ctx, repos)
 
 	_, err = clt.CloneRepos(ctx, dir)
 	if err != nil {

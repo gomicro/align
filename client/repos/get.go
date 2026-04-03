@@ -1,4 +1,4 @@
-package client
+package repos
 
 import (
 	"context"
@@ -9,12 +9,12 @@ import (
 	"github.com/gosuri/uiprogress"
 )
 
-func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repository, error) {
+func (r *Repos) GetRepos(ctx context.Context, name string) ([]*github.Repository, error) {
 	count := 0
 	orgFound := true
 
-	c.rate.Wait(ctx) //nolint: errcheck
-	org, resp, err := c.ghClient.Organizations.Get(ctx, name)
+	r.rate.Wait(ctx) //nolint: errcheck
+	org, resp, err := r.ghClient.Organizations.Get(ctx, name)
 	if resp == nil && err != nil {
 		if _, ok := err.(*github.RateLimitError); ok {
 			return nil, fmt.Errorf("github: hit rate limit")
@@ -26,8 +26,8 @@ func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repositor
 	if resp.StatusCode == http.StatusNotFound {
 		orgFound = false
 
-		c.rate.Wait(ctx) //nolint: errcheck
-		user, _, err := c.ghClient.Users.Get(ctx, name)
+		r.rate.Wait(ctx) //nolint: errcheck
+		user, _, err := r.ghClient.Users.Get(ctx, name)
 		if err != nil {
 			if _, ok := err.(*github.RateLimitError); ok {
 				return nil, fmt.Errorf("github: hit rate limit")
@@ -76,11 +76,11 @@ func (c *Client) GetRepos(ctx context.Context, name string) ([]*github.Repositor
 	var repos []*github.Repository
 	for {
 		var rs []*github.Repository
-		c.rate.Wait(ctx) //nolint: errcheck
+		r.rate.Wait(ctx) //nolint: errcheck
 		if orgFound {
-			rs, resp, err = c.ghClient.Repositories.ListByOrg(ctx, name, orgOpts)
+			rs, resp, err = r.ghClient.Repositories.ListByOrg(ctx, name, orgOpts)
 		} else {
-			rs, resp, err = c.ghClient.Repositories.List(ctx, name, userOpts)
+			rs, resp, err = r.ghClient.Repositories.List(ctx, name, userOpts)
 		}
 
 		if err != nil {

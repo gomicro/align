@@ -1,4 +1,4 @@
-package client
+package remotes
 
 import (
 	"bytes"
@@ -7,22 +7,23 @@ import (
 	"os/exec"
 	"strings"
 
+	ctxhelper "github.com/gomicro/align/client/context"
 	"github.com/gosuri/uiprogress"
 )
 
-func (c *Client) SetURLs(ctx context.Context, dirs []string, name, baseURL string) error {
+func (r *Remotes) Add(ctx context.Context, dirs []string, name, baseURL string) error {
 	count := len(dirs)
 
-	args := append([]string{"remote", "set-url"}, name)
+	args := append([]string{"remote", "add"}, name)
 
-	verbose := Verbose(ctx)
+	verbose := ctxhelper.Verbose(ctx)
 
 	var bar *uiprogress.Bar
 	currRepo := ""
 
 	if verbose {
-		c.scrb.BeginDescribe("Command")
-		defer c.scrb.EndDescribe()
+		r.scrb.BeginDescribe("Command")
+		defer r.scrb.EndDescribe()
 
 		var vargs []string
 		vargs = append(vargs, args...)
@@ -30,16 +31,16 @@ func (c *Client) SetURLs(ctx context.Context, dirs []string, name, baseURL strin
 		url := buildURL(baseURL, "<dir>")
 		vargs = append(vargs, url)
 
-		c.scrb.Print(fmt.Sprintf("git %s", strings.Join(vargs, " ")))
+		r.scrb.Print(fmt.Sprintf("git %s", strings.Join(vargs, " ")))
 
-		c.scrb.BeginDescribe("directories")
-		defer c.scrb.EndDescribe()
+		r.scrb.BeginDescribe("directories")
+		defer r.scrb.EndDescribe()
 	} else {
 		bar = uiprogress.AddBar(count).
 			AppendCompleted().
 			PrependElapsed().
 			PrependFunc(func(b *uiprogress.Bar) string {
-				return fmt.Sprintf("Setting URL (%d/%d)", b.Current(), count)
+				return fmt.Sprintf("Adding Remote (%d/%d)", b.Current(), count)
 			}).
 			AppendFunc(func(b *uiprogress.Bar) string {
 				return currRepo
@@ -69,15 +70,15 @@ func (c *Client) SetURLs(ctx context.Context, dirs []string, name, baseURL strin
 		}
 
 		if verbose {
-			c.scrb.BeginDescribe(dir)
+			r.scrb.BeginDescribe(dir)
 			if err != nil {
-				c.scrb.Error(err)
-				c.scrb.PrintLines(errout)
+				r.scrb.Error(err)
+				r.scrb.PrintLines(errout)
 			} else {
-				c.scrb.PrintLines(out)
+				r.scrb.PrintLines(out)
 			}
 
-			c.scrb.EndDescribe()
+			r.scrb.EndDescribe()
 		} else {
 			bar.Incr()
 		}
@@ -86,10 +87,4 @@ func (c *Client) SetURLs(ctx context.Context, dirs []string, name, baseURL strin
 	currRepo = ""
 
 	return nil
-}
-
-func buildURL(baseURL, dir string) string {
-	baseURL = strings.TrimSuffix(baseURL, "/")
-
-	return fmt.Sprintf("%s/%s.git", baseURL, dir)
 }

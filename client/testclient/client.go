@@ -3,7 +3,8 @@ package testclient
 import (
 	"context"
 
-	"github.com/gomicro/align/client"
+	clientctx "github.com/gomicro/align/client/context"
+	"github.com/gomicro/align/client/repos"
 	"github.com/google/go-github/github"
 )
 
@@ -27,7 +28,7 @@ func (c *TestClient) CommitRepos(ctx context.Context, dirs []string, args ...str
 	return nil
 }
 
-func (c *TestClient) CloneRepos(ctx context.Context, baseDir string) ([]*client.Repository, error) {
+func (c *TestClient) CloneRepos(ctx context.Context, baseDir string) ([]*clientctx.Repository, error) {
 	c.CommandsCalled = append(c.CommandsCalled, "CloneRepos")
 
 	return nil, nil
@@ -141,7 +142,7 @@ func (c *TestClient) TagRepos(ctx context.Context, repoDirs []string, args ...st
 	return nil
 }
 
-func (c *TestClient) DiffRepos(ctx context.Context, repoDirs []string, cfg *client.DiffConfig) error {
+func (c *TestClient) DiffRepos(ctx context.Context, repoDirs []string, cfg *repos.DiffConfig) error {
 	c.CommandsCalled = append(c.CommandsCalled, "DiffRepos")
 
 	return nil

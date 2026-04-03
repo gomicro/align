@@ -3,6 +3,8 @@ package client
 import (
 	"context"
 
+	clientctx "github.com/gomicro/align/client/context"
+	"github.com/gomicro/align/client/repos"
 	"github.com/google/go-github/github"
 )
 
@@ -10,9 +12,9 @@ type Clienter interface {
 	Add(ctx context.Context, dirs []string, name, baseURL string) error
 	Branches(ctx context.Context, repoDirs []string, args ...string) error
 	CheckoutRepos(ctx context.Context, repoDirs []string, args ...string) error
-	CloneRepos(ctx context.Context, dir string) ([]*Repository, error)
+	CloneRepos(ctx context.Context, dir string) ([]*clientctx.Repository, error)
 	CommitRepos(ctx context.Context, dirs []string, args ...string) error
-	DiffRepos(ctx context.Context, repoDirs []string, cfg *DiffConfig) error
+	DiffRepos(ctx context.Context, repoDirs []string, cfg *repos.DiffConfig) error
 	GetBranchAndTagNames(ctx context.Context, dirs []string) ([]string, error)
 	GetBranchNames(ctx context.Context, dirs []string) ([]string, error)
 	GetDirs(ctx context.Context, dir string) ([]string, error)

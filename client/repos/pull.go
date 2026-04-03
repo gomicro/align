@@ -1,4 +1,4 @@
-package client
+package repos
 
 import (
 	"bytes"
@@ -8,32 +8,33 @@ import (
 	"os/exec"
 	"strings"
 
+	ctxhelper "github.com/gomicro/align/client/context"
 	"github.com/gosuri/uiprogress"
 )
 
-func (c *Client) PushRepos(ctx context.Context, dirs []string, args ...string) error {
+func (r *Repos) PullRepos(ctx context.Context, dirs []string, args ...string) error {
 	count := len(dirs)
-	args = append([]string{"push"}, args...)
+	args = append([]string{"pull"}, args...)
 
-	verbose := Verbose(ctx)
+	verbose := ctxhelper.Verbose(ctx)
 
 	var bar *uiprogress.Bar
 	currRepo := ""
 
 	if verbose {
-		c.scrb.BeginDescribe("Command")
-		defer c.scrb.EndDescribe()
+		r.scrb.BeginDescribe("Command")
+		defer r.scrb.EndDescribe()
 
-		c.scrb.Print(fmt.Sprintf("git %s", strings.Join(args, " ")))
+		r.scrb.Print(fmt.Sprintf("git %s", strings.Join(args, " ")))
 
-		c.scrb.BeginDescribe("directories")
-		defer c.scrb.EndDescribe()
+		r.scrb.BeginDescribe("directories")
+		defer r.scrb.EndDescribe()
 	} else {
 		bar = uiprogress.AddBar(count).
 			AppendCompleted().
 			PrependElapsed().
 			PrependFunc(func(b *uiprogress.Bar) string {
-				return fmt.Sprintf("Pushing (%d/%d)", b.Current(), count)
+				return fmt.Sprintf("Pulling (%d/%d)", b.Current(), count)
 			}).
 			AppendFunc(func(b *uiprogress.Bar) string {
 				return currRepo
@@ -48,23 +49,22 @@ func (c *Client) PushRepos(ctx context.Context, dirs []string, args ...string) e
 		out := &bytes.Buffer{}
 		errout := &bytes.Buffer{}
 
-		var err error
 		cmd := exec.CommandContext(ctx, "git", args...)
 		cmd.Stdout = out
 		cmd.Stderr = errout
 		cmd.Dir = dir
 
-		err = cmd.Run()
+		err := cmd.Run()
 		if verbose {
-			c.scrb.BeginDescribe(dir)
+			r.scrb.BeginDescribe(dir)
 			if err != nil {
-				c.scrb.Error(err)
-				c.scrb.PrintLines(errout)
+				r.scrb.Error(err)
+				r.scrb.PrintLines(errout)
 			} else {
-				c.scrb.PrintLines(out)
+				r.scrb.PrintLines(out)
 			}
 
-			c.scrb.EndDescribe()
+			r.scrb.EndDescribe()
 		} else {
 			if err != nil {
 				errs = append(errs, fmt.Errorf("%s: %w: %s", dir, err, strings.TrimSpace(errout.String())))

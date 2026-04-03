@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/gomicro/align/client"
+	ctxhelper "github.com/gomicro/align/client/context"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -73,7 +73,7 @@ func pushCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) 
 
 func pushFunc(cmd *cobra.Command, args []string) error {
 	verbose := viper.GetBool("verbose")
-	ctx := client.WithVerbose(context.Background(), verbose)
+	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
 
 	if !verbose {
 		uiprogress.Start()

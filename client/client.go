@@ -9,6 +9,8 @@ import (
 	"strings"
 
 	sshgit "github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	"github.com/gomicro/align/client/remotes"
+	"github.com/gomicro/align/client/repos"
 	"github.com/gomicro/align/config"
 	"github.com/gomicro/scribe"
 	"github.com/gomicro/scribe/color"
@@ -20,12 +22,12 @@ import (
 )
 
 type Client struct {
+	*repos.Repos
+	remoteMgr   *remotes.Remotes
 	cfg         *config.Config
 	ghClient    *github.Client
-	rate        *rate.Limiter
 	ghSSHAuth   *sshgit.PublicKeys
 	ghHTTPSAuth *sshgit.Password
-	scrb        scribe.Scriber
 }
 
 func New(cfg *config.Config) (*Client, error) {
@@ -104,13 +106,15 @@ func New(cfg *config.Config) (*Client, error) {
 		return nil, fmt.Errorf("scribe: %w", err)
 	}
 
+	ghClient := github.NewClient(oauth2.NewClient(ctx, ts))
+
 	return &Client{
+		Repos:       repos.New(scrb, ghClient, rl),
+		remoteMgr:   remotes.New(scrb),
 		cfg:         cfg,
-		ghClient:    github.NewClient(oauth2.NewClient(ctx, ts)),
-		rate:        rl,
+		ghClient:    ghClient,
 		ghSSHAuth:   publicKeys,
 		ghHTTPSAuth: pass,
-		scrb:        scrb,
 	}, nil
 }
 
@@ -148,4 +152,20 @@ func (c *Client) GetLogins(ctx context.Context) ([]string, error) {
 	}
 
 	return logins, nil
+}
+
+func (c *Client) Remotes(ctx context.Context, dirs []string, args ...string) error {
+	return c.remoteMgr.Remotes(ctx, dirs, args...)
+}
+
+func (c *Client) Add(ctx context.Context, dirs []string, name, baseURL string) error {
+	return c.remoteMgr.Add(ctx, dirs, name, baseURL)
+}
+
+func (c *Client) Remove(ctx context.Context, dirs []string, name string) error {
+	return c.remoteMgr.Remove(ctx, dirs, name)
+}
+
+func (c *Client) SetURLs(ctx context.Context, dirs []string, name, baseURL string) error {
+	return c.remoteMgr.SetURLs(ctx, dirs, name, baseURL)
 }

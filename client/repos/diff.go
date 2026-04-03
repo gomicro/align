@@ -1,4 +1,4 @@
-package client
+package repos
 
 import (
 	"bufio"
@@ -16,16 +16,16 @@ type DiffConfig struct {
 	Args             []string
 }
 
-func (c *Client) DiffRepos(ctx context.Context, dirs []string, cfg *DiffConfig) error {
+func (r *Repos) DiffRepos(ctx context.Context, dirs []string, cfg *DiffConfig) error {
 	args := append([]string{"diff"}, cfg.Args...)
 
-	c.scrb.BeginDescribe("Command")
-	defer c.scrb.EndDescribe()
+	r.scrb.BeginDescribe("Command")
+	defer r.scrb.EndDescribe()
 
-	c.scrb.Print(fmt.Sprintf("git %s", strings.Join(args, " ")))
+	r.scrb.Print(fmt.Sprintf("git %s", strings.Join(args, " ")))
 
-	c.scrb.BeginDescribe("directories")
-	defer c.scrb.EndDescribe()
+	r.scrb.BeginDescribe("directories")
+	defer r.scrb.EndDescribe()
 
 	for _, dir := range dirs {
 		out := &bytes.Buffer{}
@@ -47,15 +47,15 @@ func (c *Client) DiffRepos(ctx context.Context, dirs []string, cfg *DiffConfig) 
 			continue
 		}
 
-		c.scrb.BeginDescribe(dir)
+		r.scrb.BeginDescribe(dir)
 		if err != nil {
-			c.scrb.Error(err)
-			c.scrb.PrintLines(errout)
+			r.scrb.Error(err)
+			r.scrb.PrintLines(errout)
 		} else {
-			c.scrb.PrintLines(out)
+			r.scrb.PrintLines(out)
 		}
 
-		c.scrb.EndDescribe()
+		r.scrb.EndDescribe()
 	}
 
 	return nil

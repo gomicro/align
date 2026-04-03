@@ -1,4 +1,4 @@
-package client
+package remotes
 
 import (
 	"bytes"
@@ -7,27 +7,28 @@ import (
 	"os/exec"
 	"strings"
 
+	ctxhelper "github.com/gomicro/align/client/context"
 	"github.com/gosuri/uiprogress"
 )
 
-func (c *Client) Remove(ctx context.Context, dirs []string, name string) error {
+func (r *Remotes) Remove(ctx context.Context, dirs []string, name string) error {
 	count := len(dirs)
 
 	args := append([]string{"remote", "remove"}, name)
 
-	verbose := Verbose(ctx)
+	verbose := ctxhelper.Verbose(ctx)
 
 	var bar *uiprogress.Bar
 	currRepo := ""
 
 	if verbose {
-		c.scrb.BeginDescribe("Command")
-		defer c.scrb.EndDescribe()
+		r.scrb.BeginDescribe("Command")
+		defer r.scrb.EndDescribe()
 
-		c.scrb.Print(fmt.Sprintf("git %s", strings.Join(args, " ")))
+		r.scrb.Print(fmt.Sprintf("git %s", strings.Join(args, " ")))
 
-		c.scrb.BeginDescribe("directories")
-		defer c.scrb.EndDescribe()
+		r.scrb.BeginDescribe("directories")
+		defer r.scrb.EndDescribe()
 	} else {
 		bar = uiprogress.AddBar(count).
 			AppendCompleted().
@@ -57,15 +58,15 @@ func (c *Client) Remove(ctx context.Context, dirs []string, name string) error {
 		}
 
 		if verbose {
-			c.scrb.BeginDescribe(dir)
+			r.scrb.BeginDescribe(dir)
 			if err != nil {
-				c.scrb.Error(err)
-				c.scrb.PrintLines(errout)
+				r.scrb.Error(err)
+				r.scrb.PrintLines(errout)
 			} else {
-				c.scrb.PrintLines(out)
+				r.scrb.PrintLines(out)
 			}
 
-			c.scrb.EndDescribe()
+			r.scrb.EndDescribe()
 		} else {
 			bar.Incr()
 		}

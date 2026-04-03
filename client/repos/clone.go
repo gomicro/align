@@ -1,4 +1,4 @@
-package client
+package repos
 
 import (
 	"bytes"
@@ -8,16 +8,17 @@ import (
 	"os/exec"
 	"path"
 
+	ctxhelper "github.com/gomicro/align/client/context"
 	"github.com/gosuri/uiprogress"
 )
 
-func (c *Client) CloneRepos(ctx context.Context, baseDir string) ([]*Repository, error) {
-	dirRepos, err := RepoMap(ctx)
+func (r *Repos) CloneRepos(ctx context.Context, baseDir string) ([]*ctxhelper.Repository, error) {
+	dirRepos, err := ctxhelper.RepoMap(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("repomap context: %w", err)
 	}
 
-	dirRepos, err = removeExcludes(ctx, dirRepos)
+	dirRepos, err = ctxhelper.RemoveExcludes(ctx, dirRepos)
 	if err != nil {
 		return nil, fmt.Errorf("remove excludes: %w", err)
 	}
@@ -38,7 +39,7 @@ func (c *Client) CloneRepos(ctx context.Context, baseDir string) ([]*Repository,
 			return currRepo
 		})
 
-	cloned := []*Repository{}
+	cloned := []*ctxhelper.Repository{}
 	var errs error
 	for dir, rs := range dirRepos {
 		if baseDir != "" {
@@ -46,8 +47,8 @@ func (c *Client) CloneRepos(ctx context.Context, baseDir string) ([]*Repository,
 		}
 
 		for i := range rs {
-			currRepo = fmt.Sprintf("\nCurrent Repo: %v/%v", dir, rs[i].name)
-			dest := path.Join(".", dir, rs[i].name)
+			currRepo = fmt.Sprintf("\nCurrent Repo: %v/%v", dir, rs[i].Name)
+			dest := path.Join(".", dir, rs[i].Name)
 
 			exists, err := dirExists(dest)
 			if err != nil {
@@ -64,7 +65,7 @@ func (c *Client) CloneRepos(ctx context.Context, baseDir string) ([]*Repository,
 			}
 
 			if !exists {
-				cmd := exec.CommandContext(ctx, "git", "clone", rs[i].url, dest)
+				cmd := exec.CommandContext(ctx, "git", "clone", rs[i].URL, dest)
 
 				buf := bytes.Buffer{}
 				cmd.Stdout = &buf

@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gomicro/align/client"
+	ctxhelper "github.com/gomicro/align/client/context"
+	"github.com/gomicro/align/client/repos"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -76,7 +77,7 @@ func diffCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) 
 
 func diffFunc(cmd *cobra.Command, args []string) error {
 	verbose := viper.GetBool("verbose")
-	ctx := client.WithVerbose(context.Background(), verbose)
+	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
 
 	repoDirs, err := clt.GetDirs(ctx, dir)
 	if err != nil {
@@ -95,7 +96,7 @@ func diffFunc(cmd *cobra.Command, args []string) error {
 		args = append([]string{"--color"}, args...)
 	}
 
-	cfg := &client.DiffConfig{
+	cfg := &repos.DiffConfig{
 		IgnoreEmpty:      ignoreEmtpy,
 		IgnoreFilePrefix: ignoreFilePrefix,
 		MatchExtension:   matchExtension,

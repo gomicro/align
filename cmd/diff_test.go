@@ -40,4 +40,19 @@ func TestDiff(t *testing.T) {
 
 		tc.AssertCommandsCalled(t, "GetDirs", "DiffRepos")
 	})
+
+	t.Run("passes --staged flag", func(t *testing.T) {
+		t.Parallel()
+
+		staged = true
+		t.Cleanup(func() { staged = false })
+
+		tc := testclient.New()
+		clt = tc
+
+		err := diffFunc(diffCmd, []string{})
+		assert.NoError(t, err)
+
+		tc.AssertCommandsCalled(t, "GetDirs", "DiffRepos")
+	})
 }

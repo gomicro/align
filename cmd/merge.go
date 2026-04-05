@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	noFF    bool
-	squash  bool
+	noFF       bool
+	squash     bool
 	abortMerge bool
 )
 

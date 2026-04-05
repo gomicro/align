@@ -9,11 +9,14 @@ import (
 	"github.com/spf13/viper"
 )
 
+var showBranch bool
+
 func init() {
 	RootCmd.AddCommand(statusCmd)
 
 	statusCmd.Flags().StringVar(&dir, "dir", ".", "directory to show status of repos in")
 	statusCmd.Flags().BoolVarP(&short, "short", "s", false, "show status in short format")
+	statusCmd.Flags().BoolVarP(&showBranch, "branch", "b", false, "show branch and upstream tracking info")
 	statusCmd.Flags().BoolVar(&ignoreEmtpy, "ignore-empty", false, "ignore repos with no changes (most useful with --short)")
 }
 
@@ -37,6 +40,10 @@ func statusFunc(cmd *cobra.Command, args []string) error {
 
 	if short {
 		args = append(args, "--short")
+	}
+
+	if showBranch {
+		args = append(args, "--branch")
 	}
 
 	err = clt.StatusRepos(ctx, repoDirs, ignoreEmtpy, args...)

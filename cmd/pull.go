@@ -20,6 +20,7 @@ func init() {
 
 	pullCmd.Flags().StringVar(&dir, "dir", ".", "directory to pull repos from")
 	pullCmd.Flags().BoolVar(&tags, "tags", false, "pull tags")
+	pullCmd.Flags().BoolVar(&prune, "prune", false, "remove stale remote-tracking refs after pulling")
 }
 
 var pullCmd = &cobra.Command{
@@ -47,6 +48,10 @@ func pullFunc(cmd *cobra.Command, args []string) error {
 
 	if tags {
 		args = append(args, "--tags")
+	}
+
+	if prune {
+		args = append(args, "--prune")
 	}
 
 	err = clt.PullRepos(ctx, repoDirs, args...)

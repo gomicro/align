@@ -44,4 +44,17 @@ func TestPush(t *testing.T) {
 
 		tc.AssertCommandsCalled(t, "GetDirs", "PushRepos")
 	})
+
+	t.Run("passes --tags flag", func(t *testing.T) {
+		tags = true
+		t.Cleanup(func() { tags = false })
+
+		tc := testclient.New()
+		clt = tc
+
+		err := pushFunc(pushCmd, []string{})
+		assert.NoError(t, err)
+
+		tc.AssertCommandsCalled(t, "GetDirs", "PushRepos")
+	})
 }

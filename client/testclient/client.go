@@ -133,6 +133,12 @@ func (c *TestClient) Remove(ctx context.Context, dirs []string, name string) err
 	return c.Errors["Remove"]
 }
 
+func (c *TestClient) StashRepos(ctx context.Context, repoDirs []string, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "StashRepos")
+
+	return c.Errors["StashRepos"]
+}
+
 func (c *TestClient) StatusRepos(ctx context.Context, dirs []string, ignoreEmpty bool, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "StatusRepos")
 

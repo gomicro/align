@@ -7,6 +7,7 @@ import (
 	"github.com/gomicro/align/client"
 	cfgCmd "github.com/gomicro/align/cmd/config"
 	"github.com/gomicro/align/cmd/remote"
+	"github.com/gomicro/align/cmd/stash"
 	"github.com/gomicro/align/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -21,6 +22,7 @@ func init() {
 
 	RootCmd.AddCommand(cfgCmd.ConfigCmd)
 	RootCmd.AddCommand(remote.RemoteCmd)
+	RootCmd.AddCommand(stash.StashCmd)
 
 	RootCmd.PersistentFlags().BoolP("verbose", "v", false, "show more verbose output")
 

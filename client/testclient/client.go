@@ -37,6 +37,12 @@ func (c *TestClient) CloneRepos(ctx context.Context, baseDir string) ([]*clientc
 	return nil, c.Errors["CloneRepos"]
 }
 
+func (c *TestClient) FetchRepos(ctx context.Context, repoDirs []string, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "FetchRepos")
+
+	return c.Errors["FetchRepos"]
+}
+
 func (c *TestClient) GetBranchNames(ctx context.Context, dirs []string) ([]string, error) {
 	c.CommandsCalled = append(c.CommandsCalled, "GetBranchNames")
 

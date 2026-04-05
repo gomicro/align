@@ -1,0 +1,83 @@
+package cmd
+
+import (
+	"context"
+	"fmt"
+
+	ctxhelper "github.com/gomicro/align/client/context"
+	"github.com/gosuri/uiprogress"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+)
+
+func init() {
+	RootCmd.AddCommand(fetchCmd)
+
+	fetchCmd.Flags().StringVar(&dir, "dir", ".", "directory to fetch repos in")
+	fetchCmd.Flags().BoolVar(&tags, "tags", false, "fetch all tags")
+}
+
+var fetchCmd = &cobra.Command{
+	Use:               "fetch [remote]",
+	Short:             "Fetch from remotes across all repos in a directory",
+	Long:              `Fetch from remotes across all repos in a directory without merging into the working tree.`,
+	Args:              cobra.MaximumNArgs(1),
+	ValidArgsFunction: fetchCmdValidArgsFunc,
+	PersistentPreRun:  setupClient,
+	RunE:              fetchFunc,
+}
+
+func fetchCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) >= 1 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	setupClient(cmd, args)
+
+	fetchDir, err := cmd.Flags().GetString("dir")
+	if err != nil {
+		fetchDir = "."
+	}
+
+	ctx := context.Background()
+
+	repoDirs, err := clt.GetDirs(ctx, fetchDir)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	names, err := clt.GetRemoteNames(ctx, repoDirs)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	return names, cobra.ShellCompDirectiveNoFileComp
+}
+
+func fetchFunc(cmd *cobra.Command, args []string) error {
+	verbose := viper.GetBool("verbose")
+	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
+
+	if !verbose {
+		uiprogress.Start()
+		defer uiprogress.Stop()
+	}
+
+	repoDirs, err := clt.GetDirs(ctx, dir)
+	if err != nil {
+		cmd.SilenceUsage = true
+		return fmt.Errorf("get dirs: %w", err)
+	}
+
+	if tags {
+		args = append(args, "--tags")
+	}
+
+	err = clt.FetchRepos(ctx, repoDirs, args...)
+	if err != nil {
+		cmd.SilenceUsage = true
+		return fmt.Errorf("fetch repos: %w", err)
+	}
+
+	return nil
+}

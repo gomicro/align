@@ -121,6 +121,12 @@ func (c *TestClient) Remotes(ctx context.Context, repoDirs []string, args ...str
 	return c.Errors["Remotes"]
 }
 
+func (c *TestClient) ResetRepos(ctx context.Context, repoDirs []string, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "ResetRepos")
+
+	return c.Errors["ResetRepos"]
+}
+
 func (c *TestClient) SetURLs(ctx context.Context, repoDirs []string, name, baseURL string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "SetURLs")
 

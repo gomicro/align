@@ -97,6 +97,12 @@ func (c *TestClient) ListTags(ctx context.Context, repoDirs []string, args ...st
 	return c.Errors["ListTags"]
 }
 
+func (c *TestClient) MergeRepos(ctx context.Context, repoDirs []string, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "MergeRepos")
+
+	return c.Errors["MergeRepos"]
+}
+
 func (c *TestClient) PullRepos(ctx context.Context, repoDirs []string, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "PullRepos")
 

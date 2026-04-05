@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/gomicro/align/client"
+	ctxhelper "github.com/gomicro/align/client/context"
 	"github.com/gomicro/align/config"
 	"github.com/spf13/cobra"
 )
@@ -30,7 +31,7 @@ var RemoteCmd = &cobra.Command{
 }
 
 func remoteFunc(cmd *cobra.Command, args []string) error {
-	ctx := client.WithVerbose(context.Background(), verbose)
+	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
 
 	repoDirs, err := clt.GetDirs(ctx, dir)
 	if err != nil {

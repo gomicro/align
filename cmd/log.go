@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gomicro/align/client"
+	ctxhelper "github.com/gomicro/align/client/context"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -75,7 +75,7 @@ func logCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) (
 
 func logFunc(cmd *cobra.Command, args []string) error {
 	verbose := viper.GetBool("verbose")
-	ctx := client.WithVerbose(context.Background(), verbose)
+	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
 
 	repoDirs, err := clt.GetDirs(ctx, dir)
 	if err != nil {

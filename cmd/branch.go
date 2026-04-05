@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gomicro/align/client"
+	ctxhelper "github.com/gomicro/align/client/context"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -66,7 +66,7 @@ func branchCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string
 
 func branchFunc(cmd *cobra.Command, args []string) error {
 	verbose := viper.GetBool("verbose")
-	ctx := client.WithVerbose(context.Background(), verbose)
+	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
 
 	repoDirs, err := clt.GetDirs(ctx, dir)
 	if err != nil {
@@ -109,7 +109,7 @@ func branchFunc(cmd *cobra.Command, args []string) error {
 	}
 
 	// This must be verbose to show anything
-	ctx = client.WithVerbose(ctx, true)
+	ctx = ctxhelper.WithVerbose(ctx, true)
 
 	err = clt.Branches(ctx, repoDirs, args...)
 	if err != nil {

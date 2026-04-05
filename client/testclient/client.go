@@ -10,146 +10,149 @@ import (
 
 type TestClient struct {
 	CommandsCalled []string
+	Errors         map[string]error
 }
 
 func New() *TestClient {
-	return &TestClient{}
+	return &TestClient{
+		Errors: map[string]error{},
+	}
 }
 
 func (c *TestClient) CheckoutRepos(ctx context.Context, repoDirs []string, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "CheckoutRepos")
 
-	return nil
+	return c.Errors["CheckoutRepos"]
 }
 
 func (c *TestClient) CommitRepos(ctx context.Context, dirs []string, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "CommitRepos")
 
-	return nil
+	return c.Errors["CommitRepos"]
 }
 
 func (c *TestClient) CloneRepos(ctx context.Context, baseDir string) ([]*clientctx.Repository, error) {
 	c.CommandsCalled = append(c.CommandsCalled, "CloneRepos")
 
-	return nil, nil
+	return nil, c.Errors["CloneRepos"]
 }
 
 func (c *TestClient) GetBranchNames(ctx context.Context, dirs []string) ([]string, error) {
 	c.CommandsCalled = append(c.CommandsCalled, "GetBranchNames")
 
-	return nil, nil
+	return nil, c.Errors["GetBranchNames"]
 }
 
 func (c *TestClient) GetBranchAndTagNames(ctx context.Context, dirs []string) ([]string, error) {
 	c.CommandsCalled = append(c.CommandsCalled, "GetBranchAndTagNames")
 
-	return nil, nil
+	return nil, c.Errors["GetBranchAndTagNames"]
 }
 
 func (c *TestClient) GetDirs(ctx context.Context, dir string) ([]string, error) {
 	c.CommandsCalled = append(c.CommandsCalled, "GetDirs")
 
-	return nil, nil
+	return nil, c.Errors["GetDirs"]
 }
 
 func (c *TestClient) GetLogins(ctx context.Context) ([]string, error) {
 	c.CommandsCalled = append(c.CommandsCalled, "GetLogins")
 
-	return nil, nil
+	return nil, c.Errors["GetLogins"]
 }
 
 func (c *TestClient) GetRemoteNames(ctx context.Context, dirs []string) ([]string, error) {
 	c.CommandsCalled = append(c.CommandsCalled, "GetRemoteNames")
 
-	return nil, nil
+	return nil, c.Errors["GetRemoteNames"]
 }
 
 func (c *TestClient) GetTagNames(ctx context.Context, dirs []string) ([]string, error) {
 	c.CommandsCalled = append(c.CommandsCalled, "GetTagNames")
 
-	return nil, nil
+	return nil, c.Errors["GetTagNames"]
 }
 
 func (c *TestClient) GetRepos(ctx context.Context, name string) ([]*github.Repository, error) {
 	c.CommandsCalled = append(c.CommandsCalled, "GetRepos")
 
-	return nil, nil
+	return nil, c.Errors["GetRepos"]
 }
 
 func (c *TestClient) Branches(ctx context.Context, repoDirs []string, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "Branches")
 
-	return nil
+	return c.Errors["Branches"]
 }
 
 func (c *TestClient) ListTags(ctx context.Context, repoDirs []string, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "ListTags")
 
-	return nil
+	return c.Errors["ListTags"]
 }
 
 func (c *TestClient) PullRepos(ctx context.Context, repoDirs []string, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "PullRepos")
 
-	return nil
+	return c.Errors["PullRepos"]
 }
 
 func (c *TestClient) PushRepos(ctx context.Context, repoDirs []string, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "PushRepos")
 
-	return nil
+	return c.Errors["PushRepos"]
 }
 
 func (c *TestClient) Remotes(ctx context.Context, repoDirs []string, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "Remotes")
 
-	return nil
+	return c.Errors["Remotes"]
 }
 
 func (c *TestClient) SetURLs(ctx context.Context, repoDirs []string, name, baseURL string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "SetURLs")
 
-	return nil
+	return c.Errors["SetURLs"]
 }
 
 func (c *TestClient) Add(ctx context.Context, dirs []string, name, baseURL string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "Add")
 
-	return nil
+	return c.Errors["Add"]
 }
 
 func (c *TestClient) Remove(ctx context.Context, dirs []string, name string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "Remove")
 
-	return nil
+	return c.Errors["Remove"]
 }
 
 func (c *TestClient) StatusRepos(ctx context.Context, dirs []string, ignoreEmpty bool, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "StatusRepos")
 
-	return nil
+	return c.Errors["StatusRepos"]
 }
 
 func (c *TestClient) StageFiles(ctx context.Context, dirs []string, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "StageFiles")
 
-	return nil
+	return c.Errors["StageFiles"]
 }
 
 func (c *TestClient) TagRepos(ctx context.Context, repoDirs []string, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "TagRepos")
 
-	return nil
+	return c.Errors["TagRepos"]
 }
 
 func (c *TestClient) DiffRepos(ctx context.Context, repoDirs []string, cfg *repos.DiffConfig) error {
 	c.CommandsCalled = append(c.CommandsCalled, "DiffRepos")
 
-	return nil
+	return c.Errors["DiffRepos"]
 }
 
 func (c *TestClient) LogRepos(ctx context.Context, repoDirs []string, ignoreEmtpy bool, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "LogRepos")
 
-	return nil
+	return c.Errors["LogRepos"]
 }

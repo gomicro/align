@@ -70,4 +70,17 @@ func TestMerge(t *testing.T) {
 
 		tc.AssertCommandsCalled(t, "GetDirs", "MergeRepos")
 	})
+
+	t.Run("continues in-progress merge", func(t *testing.T) {
+		continueMerge = true
+		t.Cleanup(func() { continueMerge = false })
+
+		tc := testclient.New()
+		clt = tc
+
+		err := mergeFunc(mergeCmd, []string{})
+		assert.NoError(t, err)
+
+		tc.AssertCommandsCalled(t, "GetDirs", "MergeRepos")
+	})
 }

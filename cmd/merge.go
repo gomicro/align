@@ -11,10 +11,11 @@ import (
 )
 
 var (
-	noFF       bool
-	ffOnly     bool
-	squash     bool
-	abortMerge bool
+	noFF          bool
+	ffOnly        bool
+	squash        bool
+	abortMerge    bool
+	continueMerge bool
 )
 
 func init() {
@@ -25,11 +26,13 @@ func init() {
 	mergeCmd.Flags().BoolVar(&ffOnly, "ff-only", false, "refuse to merge unless the result is a fast-forward")
 	mergeCmd.Flags().BoolVar(&squash, "squash", false, "squash commits from the branch into a single commit")
 	mergeCmd.Flags().BoolVar(&abortMerge, "abort", false, "abort an in-progress merge")
+	mergeCmd.Flags().BoolVar(&continueMerge, "continue", false, "continue an in-progress merge after resolving conflicts")
 
 	mergeCmd.MarkFlagsMutuallyExclusive("squash", "no-ff")
 	mergeCmd.MarkFlagsMutuallyExclusive("abort", "squash")
 	mergeCmd.MarkFlagsMutuallyExclusive("abort", "no-ff")
 	mergeCmd.MarkFlagsMutuallyExclusive("ff-only", "squash", "no-ff", "abort")
+	mergeCmd.MarkFlagsMutuallyExclusive("continue", "squash", "no-ff", "ff-only", "abort")
 }
 
 var mergeCmd = &cobra.Command{
@@ -86,6 +89,8 @@ func mergeFunc(cmd *cobra.Command, args []string) error {
 
 	if abortMerge {
 		args = []string{"--abort"}
+	} else if continueMerge {
+		args = []string{"--continue"}
 	} else {
 		if noFF {
 			args = append(args, "--no-ff")

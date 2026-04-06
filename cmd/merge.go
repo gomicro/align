@@ -12,6 +12,7 @@ import (
 
 var (
 	noFF       bool
+	ffOnly     bool
 	squash     bool
 	abortMerge bool
 )
@@ -21,12 +22,14 @@ func init() {
 
 	mergeCmd.Flags().StringVar(&dir, "dir", ".", "directory to merge repos in")
 	mergeCmd.Flags().BoolVar(&noFF, "no-ff", false, "create a merge commit even when fast-forward is possible")
+	mergeCmd.Flags().BoolVar(&ffOnly, "ff-only", false, "refuse to merge unless the result is a fast-forward")
 	mergeCmd.Flags().BoolVar(&squash, "squash", false, "squash commits from the branch into a single commit")
 	mergeCmd.Flags().BoolVar(&abortMerge, "abort", false, "abort an in-progress merge")
 
 	mergeCmd.MarkFlagsMutuallyExclusive("squash", "no-ff")
 	mergeCmd.MarkFlagsMutuallyExclusive("abort", "squash")
 	mergeCmd.MarkFlagsMutuallyExclusive("abort", "no-ff")
+	mergeCmd.MarkFlagsMutuallyExclusive("ff-only", "squash", "no-ff", "abort")
 }
 
 var mergeCmd = &cobra.Command{
@@ -86,6 +89,10 @@ func mergeFunc(cmd *cobra.Command, args []string) error {
 	} else {
 		if noFF {
 			args = append(args, "--no-ff")
+		}
+
+		if ffOnly {
+			args = append(args, "--ff-only")
 		}
 
 		if squash {

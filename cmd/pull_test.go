@@ -45,6 +45,19 @@ func TestPull(t *testing.T) {
 		tc.AssertCommandsCalled(t, "GetDirs", "PullRepos")
 	})
 
+	t.Run("passes --ff-only flag", func(t *testing.T) {
+		ffOnly = true
+		t.Cleanup(func() { ffOnly = false })
+
+		tc := testclient.New()
+		clt = tc
+
+		err := pullFunc(pullCmd, []string{})
+		assert.NoError(t, err)
+
+		tc.AssertCommandsCalled(t, "GetDirs", "PullRepos")
+	})
+
 	t.Run("passes --prune flag", func(t *testing.T) {
 		prune = true
 		t.Cleanup(func() { prune = false })

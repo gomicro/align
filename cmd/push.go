@@ -15,6 +15,7 @@ var (
 	all         bool
 	force       bool
 	setUpstream bool
+	followTags  bool
 )
 
 func init() {
@@ -24,6 +25,7 @@ func init() {
 	pushCmd.Flags().BoolVar(&all, "all", false, "all branches")
 	pushCmd.Flags().BoolVar(&force, "force", false, "force push")
 	pushCmd.Flags().BoolVar(&tags, "tags", false, "push all tags")
+	pushCmd.Flags().BoolVar(&followTags, "follow-tags", false, "push annotated tags reachable from pushed commits")
 	pushCmd.Flags().BoolVarP(&setUpstream, "set-upstream", "u", false, "set upstream tracking reference")
 }
 
@@ -97,6 +99,10 @@ func pushFunc(cmd *cobra.Command, args []string) error {
 
 	if tags {
 		args = slices.Insert(args, 0, "--tags")
+	}
+
+	if followTags {
+		args = slices.Insert(args, 0, "--follow-tags")
 	}
 
 	if force {

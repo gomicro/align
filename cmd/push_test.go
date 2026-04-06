@@ -57,4 +57,17 @@ func TestPush(t *testing.T) {
 
 		tc.AssertCommandsCalled(t, "GetDirs", "PushRepos")
 	})
+
+	t.Run("passes --follow-tags flag", func(t *testing.T) {
+		followTags = true
+		t.Cleanup(func() { followTags = false })
+
+		tc := testclient.New()
+		clt = tc
+
+		err := pushFunc(pushCmd, []string{})
+		assert.NoError(t, err)
+
+		tc.AssertCommandsCalled(t, "GetDirs", "PushRepos")
+	})
 }

@@ -166,6 +166,10 @@ func (c *Client) Remove(ctx context.Context, dirs []string, name string) error {
 	return c.remoteMgr.Remove(ctx, dirs, name)
 }
 
+func (c *Client) Rename(ctx context.Context, dirs []string, oldName, newName string) error {
+	return c.remoteMgr.Rename(ctx, dirs, oldName, newName)
+}
+
 func (c *Client) SetURLs(ctx context.Context, dirs []string, name, baseURL string) error {
 	return c.remoteMgr.SetURLs(ctx, dirs, name, baseURL)
 }

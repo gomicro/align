@@ -40,4 +40,19 @@ func TestStatus(t *testing.T) {
 
 		tc.AssertCommandsCalled(t, "GetDirs", "StatusRepos")
 	})
+
+	t.Run("passes --branch flag", func(t *testing.T) {
+		t.Parallel()
+
+		showBranch = true
+		t.Cleanup(func() { showBranch = false })
+
+		tc := testclient.New()
+		clt = tc
+
+		err := statusFunc(statusCmd, []string{})
+		assert.NoError(t, err)
+
+		tc.AssertCommandsCalled(t, "GetDirs", "StatusRepos")
+	})
 }

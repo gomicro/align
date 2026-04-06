@@ -53,4 +53,18 @@ func TestCommit(t *testing.T) {
 
 		tc.AssertCommandsCalled(t, "GetDirs", "CommitRepos")
 	})
+
+	t.Run("passes --allow-empty flag", func(t *testing.T) {
+		message = "empty commit"
+		allowEmpty = true
+		t.Cleanup(func() { message = ""; allowEmpty = false })
+
+		tc := testclient.New()
+		clt = tc
+
+		err := commitFunc(commitCmd, []string{})
+		assert.NoError(t, err)
+
+		tc.AssertCommandsCalled(t, "GetDirs", "CommitRepos")
+	})
 }

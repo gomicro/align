@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	oneline bool
-	noColor bool
+	oneline  bool
+	noColor  bool
+	maxCount int
 )
 
 func init() {
@@ -21,6 +22,7 @@ func init() {
 	logCmd.Flags().BoolVar(&oneline, "oneline", false, "Show each commit on a single line")
 	logCmd.Flags().BoolVar(&noColor, "no-color", false, "Disable color output")
 	logCmd.Flags().BoolVar(&ignoreEmtpy, "ignore-empty", false, "Ignore empty repositories")
+	logCmd.Flags().IntVarP(&maxCount, "max-count", "n", 0, "Limit the number of commits shown per repo (0 means no limit)")
 }
 
 var logCmd = &cobra.Command{
@@ -85,6 +87,10 @@ func logFunc(cmd *cobra.Command, args []string) error {
 
 	if oneline {
 		args = append(args, "--oneline")
+	}
+
+	if maxCount > 0 {
+		args = append(args, fmt.Sprintf("--max-count=%d", maxCount))
 	}
 
 	if !noColor {

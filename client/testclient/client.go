@@ -145,6 +145,12 @@ func (c *TestClient) Remove(ctx context.Context, dirs []string, name string) err
 	return c.Errors["Remove"]
 }
 
+func (c *TestClient) Rename(ctx context.Context, dirs []string, oldName, newName string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "Rename")
+
+	return c.Errors["Rename"]
+}
+
 func (c *TestClient) StashRepos(ctx context.Context, repoDirs []string, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "StashRepos")
 

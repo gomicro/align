@@ -49,6 +49,32 @@ func TestBranch(t *testing.T) {
 		tc.AssertCommandsCalled(t, "GetDirs", "Branches")
 	})
 
+	t.Run("renames branch", func(t *testing.T) {
+		moveBranch = true
+		t.Cleanup(func() { moveBranch = false })
+
+		tc := testclient.New()
+		clt = tc
+
+		err := branchFunc(branchCmd, []string{"old-name", "new-name"})
+		assert.NoError(t, err)
+
+		tc.AssertCommandsCalled(t, "GetDirs", "Branches")
+	})
+
+	t.Run("returns error when renaming without both branch names", func(t *testing.T) {
+		moveBranch = true
+		t.Cleanup(func() { moveBranch = false })
+
+		tc := testclient.New()
+		clt = tc
+
+		err := branchFunc(branchCmd, []string{"only-one"})
+		assert.ErrorContains(t, err, "old and new branch names are required")
+
+		tc.AssertCommandsCalled(t, "GetDirs")
+	})
+
 	t.Run("returns error when deleting without branch name", func(t *testing.T) {
 		del = true
 		t.Cleanup(func() { del = false })
@@ -94,6 +120,47 @@ func TestBranch(t *testing.T) {
 
 		err := branchFunc(branchCmd, []string{"main"})
 		assert.ErrorContains(t, err, "delete")
+
+		tc.AssertCommandsCalled(t, "GetDirs", "Branches")
+	})
+
+	t.Run("returns error on branches rename failure", func(t *testing.T) {
+		moveBranch = true
+		t.Cleanup(func() { moveBranch = false })
+
+		tc := testclient.New()
+		tc.Errors["Branches"] = errors.New("some branches error")
+		clt = tc
+
+		err := branchFunc(branchCmd, []string{"old-name", "new-name"})
+		assert.ErrorContains(t, err, "move")
+
+		tc.AssertCommandsCalled(t, "GetDirs", "Branches")
+	})
+
+	t.Run("shows current branch", func(t *testing.T) {
+		showCurrent = true
+		t.Cleanup(func() { showCurrent = false })
+
+		tc := testclient.New()
+		clt = tc
+
+		err := branchFunc(branchCmd, []string{})
+		assert.NoError(t, err)
+
+		tc.AssertCommandsCalled(t, "GetDirs", "Branches")
+	})
+
+	t.Run("returns error on show-current failure", func(t *testing.T) {
+		showCurrent = true
+		t.Cleanup(func() { showCurrent = false })
+
+		tc := testclient.New()
+		tc.Errors["Branches"] = errors.New("some branches error")
+		clt = tc
+
+		err := branchFunc(branchCmd, []string{})
+		assert.ErrorContains(t, err, "show-current")
 
 		tc.AssertCommandsCalled(t, "GetDirs", "Branches")
 	})

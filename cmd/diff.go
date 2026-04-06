@@ -13,6 +13,7 @@ import (
 var (
 	short            bool
 	nameOnly         bool
+	staged           bool
 	ignoreEmtpy      bool
 	ignoreFilePrefix []string
 	matchExtension   []string
@@ -25,6 +26,8 @@ func init() {
 
 	diffCmd.Flags().StringArrayVar(&ignoreFilePrefix, "ignore-file-prefix", []string{}, "ignore files in diffs with the given prefix(es)")
 	diffCmd.Flags().StringArrayVar(&matchExtension, "match-extension", []string{}, "only include files in diffs with the given extension(s)")
+
+	diffCmd.Flags().BoolVar(&staged, "staged", false, "show staged changes instead of unstaged (equivalent to --cached)")
 
 	diffCmd.Flags().BoolVar(&ignoreEmtpy, "ignore-empty", false, "ignore empty diffs")
 	diffCmd.Flags().BoolVar(&noColor, "no-color", false, "disable color output")
@@ -90,6 +93,10 @@ func diffFunc(cmd *cobra.Command, args []string) error {
 		args = append(args, "--shortstat")
 	case nameOnly:
 		args = append(args, "--name-only")
+	}
+
+	if staged {
+		args = append(args, "--staged")
 	}
 
 	if !noColor {

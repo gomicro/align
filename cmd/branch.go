@@ -11,8 +11,10 @@ import (
 )
 
 var (
-	del      bool
-	delForce bool
+	del         bool
+	delForce    bool
+	moveBranch  bool
+	showCurrent bool
 )
 
 func init() {
@@ -22,28 +24,38 @@ func init() {
 	branchCmd.Flags().BoolVarP(&del, "delete", "d", false, "delete the branch from the repos")
 	branchCmd.Flags().BoolVarP(&delForce, "force-delete", "D", false, "force delete the branch from the repos")
 	branchCmd.Flags().BoolVarP(&force, "force", "f", false, "force the desired action")
+	branchCmd.Flags().BoolVarP(&moveBranch, "move", "m", false, "rename a branch: align branch --move <old> <new>")
+	branchCmd.Flags().BoolVar(&showCurrent, "show-current", false, "print the current branch name for each repo")
 
-	branchCmd.MarkFlagsMutuallyExclusive("all", "delete", "force-delete")
+	branchCmd.MarkFlagsMutuallyExclusive("all", "delete", "force-delete", "move", "show-current")
 }
 
 var branchCmd = &cobra.Command{
 	Use:               "branch",
 	Short:             "manage branches for a set of repositories",
 	Long:              `manage branches for a set of repositories`,
+	Args:              cobra.MaximumNArgs(2),
 	ValidArgsFunction: branchCmdValidArgsFunc,
 	PersistentPreRun:  setupClient,
 	RunE:              branchFunc,
 }
 
 func branchCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	if len(args) >= 1 {
+	isDelete, _ := cmd.Flags().GetBool("delete")
+	isForceDelete, _ := cmd.Flags().GetBool("force-delete")
+	isMove, _ := cmd.Flags().GetBool("move")
+
+	// delete/force-delete: complete first arg only
+	if (isDelete || isForceDelete) && len(args) >= 1 {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	isDelete, _ := cmd.Flags().GetBool("delete")
-	isForceDelete, _ := cmd.Flags().GetBool("force-delete")
+	// move: complete the old branch name (first arg); new name is freeform
+	if isMove && len(args) >= 1 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
 
-	if !isDelete && !isForceDelete {
+	if !isDelete && !isForceDelete && !isMove {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
@@ -99,6 +111,37 @@ func branchFunc(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			cmd.SilenceUsage = true
 			return fmt.Errorf("delete: %w", err)
+		}
+
+		return nil
+	}
+
+	if moveBranch {
+		if len(args) != 2 {
+			return fmt.Errorf("old and new branch names are required when renaming a branch")
+		}
+
+		if !verbose {
+			uiprogress.Start()
+			defer uiprogress.Stop()
+		}
+
+		err := clt.Branches(ctx, repoDirs, "--move", args[0], args[1])
+		if err != nil {
+			cmd.SilenceUsage = true
+			return fmt.Errorf("move: %w", err)
+		}
+
+		return nil
+	}
+
+	if showCurrent {
+		ctx = ctxhelper.WithVerbose(ctx, true)
+
+		err = clt.Branches(ctx, repoDirs, "--show-current")
+		if err != nil {
+			cmd.SilenceUsage = true
+			return fmt.Errorf("show-current: %w", err)
 		}
 
 		return nil

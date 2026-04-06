@@ -40,4 +40,19 @@ func TestLog(t *testing.T) {
 
 		tc.AssertCommandsCalled(t, "GetDirs", "LogRepos")
 	})
+
+	t.Run("passes --max-count flag", func(t *testing.T) {
+		t.Parallel()
+
+		maxCount = 10
+		t.Cleanup(func() { maxCount = 0 })
+
+		tc := testclient.New()
+		clt = tc
+
+		err := logFunc(logCmd, []string{})
+		assert.NoError(t, err)
+
+		tc.AssertCommandsCalled(t, "GetDirs", "LogRepos")
+	})
 }

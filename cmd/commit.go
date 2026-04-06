@@ -11,9 +11,10 @@ import (
 )
 
 var (
-	message string
-	amend   bool
-	noEdit  bool
+	message    string
+	amend      bool
+	noEdit     bool
+	allowEmpty bool
 )
 
 func init() {
@@ -24,6 +25,7 @@ func init() {
 	commitCmd.Flags().BoolVarP(&all, "all", "a", false, "stage all tracked modified and deleted files before committing")
 	commitCmd.Flags().BoolVar(&amend, "amend", false, "amend the last commit")
 	commitCmd.Flags().BoolVar(&noEdit, "no-edit", false, "use the existing commit message when amending")
+	commitCmd.Flags().BoolVar(&allowEmpty, "allow-empty", false, "allow a commit with no staged changes (useful for triggering CI)")
 
 	commitCmd.MarkFlagRequired("message") //nolint:errcheck
 }
@@ -53,6 +55,10 @@ func commitFunc(cmd *cobra.Command, args []string) error {
 
 	if all {
 		args = append(args, "--all")
+	}
+
+	if allowEmpty {
+		args = append(args, "--allow-empty")
 	}
 
 	args = append(args, "-m", message)

@@ -137,4 +137,31 @@ func TestBranch(t *testing.T) {
 
 		tc.AssertCommandsCalled(t, "GetDirs", "Branches")
 	})
+
+	t.Run("shows current branch", func(t *testing.T) {
+		showCurrent = true
+		t.Cleanup(func() { showCurrent = false })
+
+		tc := testclient.New()
+		clt = tc
+
+		err := branchFunc(branchCmd, []string{})
+		assert.NoError(t, err)
+
+		tc.AssertCommandsCalled(t, "GetDirs", "Branches")
+	})
+
+	t.Run("returns error on show-current failure", func(t *testing.T) {
+		showCurrent = true
+		t.Cleanup(func() { showCurrent = false })
+
+		tc := testclient.New()
+		tc.Errors["Branches"] = errors.New("some branches error")
+		clt = tc
+
+		err := branchFunc(branchCmd, []string{})
+		assert.ErrorContains(t, err, "show-current")
+
+		tc.AssertCommandsCalled(t, "GetDirs", "Branches")
+	})
 }

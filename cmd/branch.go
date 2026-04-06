@@ -11,9 +11,10 @@ import (
 )
 
 var (
-	del        bool
-	delForce   bool
-	moveBranch bool
+	del         bool
+	delForce    bool
+	moveBranch  bool
+	showCurrent bool
 )
 
 func init() {
@@ -24,8 +25,9 @@ func init() {
 	branchCmd.Flags().BoolVarP(&delForce, "force-delete", "D", false, "force delete the branch from the repos")
 	branchCmd.Flags().BoolVarP(&force, "force", "f", false, "force the desired action")
 	branchCmd.Flags().BoolVarP(&moveBranch, "move", "m", false, "rename a branch: align branch --move <old> <new>")
+	branchCmd.Flags().BoolVar(&showCurrent, "show-current", false, "print the current branch name for each repo")
 
-	branchCmd.MarkFlagsMutuallyExclusive("all", "delete", "force-delete", "move")
+	branchCmd.MarkFlagsMutuallyExclusive("all", "delete", "force-delete", "move", "show-current")
 }
 
 var branchCmd = &cobra.Command{
@@ -128,6 +130,18 @@ func branchFunc(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			cmd.SilenceUsage = true
 			return fmt.Errorf("move: %w", err)
+		}
+
+		return nil
+	}
+
+	if showCurrent {
+		ctx = ctxhelper.WithVerbose(ctx, true)
+
+		err = clt.Branches(ctx, repoDirs, "--show-current")
+		if err != nil {
+			cmd.SilenceUsage = true
+			return fmt.Errorf("show-current: %w", err)
 		}
 
 		return nil

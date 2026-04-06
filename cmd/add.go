@@ -10,10 +10,13 @@ import (
 	"github.com/spf13/viper"
 )
 
+var update bool
+
 func init() {
 	RootCmd.AddCommand(addCmd)
 
 	addCmd.Flags().StringVar(&dir, "dir", ".", "directory to stage files in")
+	addCmd.Flags().BoolVarP(&update, "update", "u", false, "stage modified and deleted files but not new untracked files")
 }
 
 var addCmd = &cobra.Command{
@@ -40,7 +43,9 @@ func addFunc(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("get dirs: %w", err)
 	}
 
-	if len(args) == 0 {
+	if update {
+		args = []string{"--update"}
+	} else if len(args) == 0 {
 		args = []string{"-A"}
 	}
 

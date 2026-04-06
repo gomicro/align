@@ -33,6 +33,19 @@ func TestAdd(t *testing.T) {
 		tc.AssertCommandsCalled(t, "GetDirs", "StageFiles")
 	})
 
+	t.Run("passes --update flag", func(t *testing.T) {
+		update = true
+		t.Cleanup(func() { update = false })
+
+		tc := testclient.New()
+		clt = tc
+
+		err := addFunc(addCmd, []string{})
+		assert.NoError(t, err)
+
+		tc.AssertCommandsCalled(t, "GetDirs", "StageFiles")
+	})
+
 	t.Run("returns error on get dirs failure", func(t *testing.T) {
 		tc := testclient.New()
 		tc.Errors["GetDirs"] = errors.New("some dirs error")

@@ -18,6 +18,7 @@ func init() {
 	fetchCmd.Flags().StringVar(&dir, "dir", ".", "directory to fetch repos in")
 	fetchCmd.Flags().BoolVar(&tags, "tags", false, "fetch all tags")
 	fetchCmd.Flags().BoolVarP(&prune, "prune", "p", false, "remove stale remote-tracking refs after fetching")
+	fetchCmd.Flags().BoolVar(&all, "all", false, "fetch from all configured remotes")
 }
 
 var fetchCmd = &cobra.Command{
@@ -70,6 +71,10 @@ func fetchFunc(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)
+	}
+
+	if all {
+		args = append(args, "--all")
 	}
 
 	if prune {

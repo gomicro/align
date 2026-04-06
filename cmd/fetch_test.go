@@ -67,4 +67,17 @@ func TestFetch(t *testing.T) {
 
 		tc.AssertCommandsCalled(t, "GetDirs", "FetchRepos")
 	})
+
+	t.Run("passes --all flag", func(t *testing.T) {
+		all = true
+		t.Cleanup(func() { all = false })
+
+		tc := testclient.New()
+		clt = tc
+
+		err := fetchFunc(fetchCmd, []string{})
+		assert.NoError(t, err)
+
+		tc.AssertCommandsCalled(t, "GetDirs", "FetchRepos")
+	})
 }

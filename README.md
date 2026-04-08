@@ -6,30 +6,30 @@
 [![License](https://img.shields.io/github/license/gomicro/align.svg)](https://github.com/gomicro/align/blob/master/LICENSE.md)
 [![Release](https://img.shields.io/github/release/gomicro/align.svg)](https://github.com/gomicro/align/releases/latest)
 
-Align is a command line tool for managing broader sets of tasks across a set of repos.
+Align is a CLI tool for running git operations across a directory of repositories at once with tab completion. Instead of managing each repo individually, you run a single `align` command and it fans out across every repo in the target directory.
 
 # Requirements
 
-Golang version 1.23 or higher.
+Git must be installed and available on `$PATH`.
 
 # Installation
 
-```
-go get github.com/gomicro/align
-```
+Download the latest release for your platform from the [releases page](https://github.com/gomicro/align/releases/latest).
 
-# Usage
+# Tab Completion
 
-See the help text for descriptions of what is available
+Align provides shell completion for bash, zsh, fish, and PowerShell. Generate a completion script with:
 
 ```
-align -h
+align completion --shell <bash|zsh|fish|powershell>
 ```
+
+Completion is context-aware — it queries the repos in the target directory at completion time to suggest relevant branch names, tag names, and remote names rather than offering static completions.
 
 # Versioning
-The tool will be versioned in accordance with [Semver 2.0.0](http://semver.org).  See the [releases](https://github.com/gomicro/align/releases) section for the latest version.  Until version 1.0.0 the tool is considered to be unstable.
 
-It is always highly recommended to vendor the version you are using.
+The tool will be versioned in accordance with [Semver 2.0.0](http://semver.org). See the [releases](https://github.com/gomicro/align/releases) section for the latest version. Until version 1.0.0 the tool is considered to be unstable.
 
 # License
+
 See [LICENSE.md](./LICENSE.md) for more information.

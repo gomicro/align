@@ -3,6 +3,7 @@ package remotes
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -41,6 +42,8 @@ func (r *Remotes) Rename(ctx context.Context, dirs []string, oldName, newName st
 			})
 	}
 
+	var errs []error
+
 	for _, dir := range dirs {
 		currRepo = fmt.Sprintf("\nCurrent Repo: %v", dir)
 
@@ -53,10 +56,6 @@ func (r *Remotes) Rename(ctx context.Context, dirs []string, oldName, newName st
 		cmd.Dir = dir
 
 		err := cmd.Run()
-		if err != nil && !verbose {
-			return fmt.Errorf("run: %w", err) // TODO: collect errors and return them all
-		}
-
 		if verbose {
 			r.scrb.BeginDescribe(dir)
 			if err != nil {
@@ -68,11 +67,15 @@ func (r *Remotes) Rename(ctx context.Context, dirs []string, oldName, newName st
 
 			r.scrb.EndDescribe()
 		} else {
+			if err != nil {
+				errs = append(errs, fmt.Errorf("%s: %w: %s", dir, err, strings.TrimSpace(errout.String())))
+			}
+
 			bar.Incr()
 		}
 	}
 
 	currRepo = ""
 
-	return nil
+	return errors.Join(errs...)
 }

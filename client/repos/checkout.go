@@ -34,7 +34,7 @@ func (r *Repos) CheckoutRepos(ctx context.Context, dirs []string, args ...string
 			AppendCompleted().
 			PrependElapsed().
 			PrependFunc(func(b *uiprogress.Bar) string {
-				return fmt.Sprintf("Checkingout (%d/%d)", b.Current(), count)
+				return fmt.Sprintf("Checking Out (%d/%d)", b.Current(), count)
 			}).
 			AppendFunc(func(b *uiprogress.Bar) string {
 				return currRepo

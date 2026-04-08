@@ -3,6 +3,7 @@ package repos
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -40,7 +41,7 @@ func (r *Repos) CloneRepos(ctx context.Context, baseDir string) ([]*ctxhelper.Re
 		})
 
 	cloned := []*ctxhelper.Repository{}
-	var errs error
+	var errs []error
 	for dir, rs := range dirRepos {
 		if baseDir != "" {
 			dir = baseDir
@@ -52,14 +53,14 @@ func (r *Repos) CloneRepos(ctx context.Context, baseDir string) ([]*ctxhelper.Re
 
 			exists, err := dirExists(dest)
 			if err != nil {
-				errs = fmt.Errorf("repo dir: %w; ", err)
+				errs = append(errs, fmt.Errorf("repo dir %s: %w", dest, err))
 				continue
 			}
 
 			if exists {
 				exists, err = dirExists(path.Join(dest, ".git"))
 				if err != nil {
-					errs = fmt.Errorf("repo git dir: %w; ", err)
+					errs = append(errs, fmt.Errorf("repo git dir %s: %w", dest, err))
 					continue
 				}
 			}
@@ -72,7 +73,9 @@ func (r *Repos) CloneRepos(ctx context.Context, baseDir string) ([]*ctxhelper.Re
 
 				err := cmd.Run()
 				if err != nil {
-					errs = fmt.Errorf("%w; ", fmt.Errorf("clone repo: %w", err))
+					errs = append(errs, fmt.Errorf("clone repo %s: %w", dest, err))
+					bar.Incr()
+					continue
 				}
 
 				cloned = append(cloned, rs[i])
@@ -84,11 +87,7 @@ func (r *Repos) CloneRepos(ctx context.Context, baseDir string) ([]*ctxhelper.Re
 
 	currRepo = ""
 
-	if errs != nil {
-		return nil, errs
-	}
-
-	return cloned, nil
+	return cloned, errors.Join(errs...)
 }
 
 func dirExists(path string) (bool, error) {

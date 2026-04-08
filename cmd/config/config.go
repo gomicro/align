@@ -51,7 +51,7 @@ func configFunc(cmd *cobra.Command, args []string) {
 
 		confFile.Github.Limits.RequestsPerSecond = rps
 	default:
-		fmt.Printf("unreconized config field: %v\n", field)
+		fmt.Printf("unrecognized config field: %v\n", field)
 		os.Exit(1)
 	}
 

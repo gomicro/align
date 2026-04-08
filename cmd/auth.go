@@ -38,7 +38,6 @@ var authCmd = &cobra.Command{
 	RunE:  authFunc,
 }
 
-
 func authFunc(cmd *cobra.Command, args []string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

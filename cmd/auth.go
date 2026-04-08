@@ -163,10 +163,78 @@ func authHandler(ctx context.Context, conf *oauth2.Config, token chan string) fu
 			os.Exit(1)
 		}
 
-		body := `<html>
-	<body>
-		<h1>Config file updated, you can close this window.</h1>
-	</body>
+		body := `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Align — Authorized</title>
+  <style>
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:      #0d1117;
+        --card-bg: #161b22;
+        --border:  #30363d;
+        --text:    #e6edf3;
+        --muted:   #8b949e;
+        --accent:  #3fb950;
+      }
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg:      #f6f8fa;
+        --card-bg: #ffffff;
+        --border:  #d0d7de;
+        --text:    #1f2328;
+        --muted:   #636c76;
+        --accent:  #1a7f37;
+      }
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 48px 56px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+    }
+    .icon {
+      font-size: 48px;
+      line-height: 1;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--accent);
+    }
+    p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">✅</div>
+    <h1>Authorization complete</h1>
+    <p>Align is connected to GitHub. You can close this tab and return to your terminal.</p>
+  </div>
+</body>
 </html>`
 
 		w.WriteHeader(http.StatusOK)

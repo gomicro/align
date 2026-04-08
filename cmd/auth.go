@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"context"
+	"crypto/rand"
 	"crypto/tls"
+	"encoding/hex"
 	"fmt"
 	"net"
 	"net/http"
@@ -36,10 +38,6 @@ var authCmd = &cobra.Command{
 	RunE:  authFunc,
 }
 
-const (
-	state = "9292a768-34bf-4002-8a69-8ace5302709d"
-)
-
 func authFunc(cmd *cobra.Command, args []string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -48,6 +46,13 @@ func authFunc(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("client id and secret must be baked into the binary, and are not present")
 	}
+
+	stateBytes := make([]byte, 16)
+	if _, err := rand.Read(stateBytes); err != nil {
+		cmd.SilenceUsage = true
+		return fmt.Errorf("generating state nonce: %w", err)
+	}
+	state := hex.EncodeToString(stateBytes)
 
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
@@ -89,7 +94,7 @@ func authFunc(cmd *cobra.Command, args []string) error {
 
 	token := make(chan string)
 
-	go startServer(ctx, listener, conf, token)
+	go startServer(ctx, listener, conf, state, token)
 
 	var opts []oauth2.AuthCodeOption
 	if reapprove {
@@ -126,8 +131,8 @@ func authFunc(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func startServer(ctx context.Context, listener net.Listener, conf *oauth2.Config, token chan string) {
-	http.HandleFunc("/auth", authHandler(ctx, conf, token))
+func startServer(ctx context.Context, listener net.Listener, conf *oauth2.Config, state string, token chan string) {
+	http.HandleFunc("/auth", authHandler(ctx, conf, state, token))
 
 	srv := &http.Server{}
 
@@ -147,7 +152,7 @@ func startServer(ctx context.Context, listener net.Listener, conf *oauth2.Config
 	}
 }
 
-func authHandler(ctx context.Context, conf *oauth2.Config, token chan string) func(w http.ResponseWriter, req *http.Request) {
+func authHandler(ctx context.Context, conf *oauth2.Config, state string, token chan string) func(w http.ResponseWriter, req *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		code := req.URL.Query().Get("code")
 		rstate := req.URL.Query().Get("state")

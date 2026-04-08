@@ -18,8 +18,8 @@ func init() {
 
 var checkoutCmd = &cobra.Command{
 	Use:               "checkout [branch]",
-	Short:             "checkout the desired branch",
-	Long:              `checkout the desired branch`,
+	Short:             "Checkout a branch across all repos in a directory",
+	Long:              `Switch to the specified branch across all repos in a directory.`,
 	Args:              cobra.RangeArgs(1, 2),
 	ValidArgsFunction: checkoutCmdValidArgsFunc,
 	PersistentPreRun:  setupClient,

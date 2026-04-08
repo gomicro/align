@@ -33,8 +33,8 @@ func init() {
 
 var authCmd = &cobra.Command{
 	Use:   "auth",
-	Short: "auth with github",
-	Long:  `authorize align against github`,
+	Short: "Authenticate with GitHub",
+	Long:  `Authorize align to access GitHub on your behalf via OAuth.`,
 	RunE:  authFunc,
 }
 

@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"os/exec"
 
 	"github.com/gomicro/align/client"
 	cfgCmd "github.com/gomicro/align/cmd/config"
@@ -39,6 +40,12 @@ func initEnvs() {
 var RootCmd = &cobra.Command{
 	Use:   "align [flags]",
 	Short: "Tool for managing repos",
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		if _, err := exec.LookPath("git"); err != nil {
+			return fmt.Errorf("git is not installed or not on PATH — it is required for align to function")
+		}
+		return nil
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

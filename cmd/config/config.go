@@ -17,8 +17,8 @@ var configValidArgs = []string{
 
 var ConfigCmd = &cobra.Command{
 	Use:       "config [config_field] [value]",
-	Short:     "config align",
-	Long:      `configure align`,
+	Short:     "Configure align settings",
+	Long:      `Get or set align configuration values.`,
 	Args:      cobra.ExactArgs(2),
 	Run:       configFunc,
 	ValidArgs: configValidArgs,

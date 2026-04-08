@@ -24,8 +24,8 @@ func init() {
 
 var cloneCmd = &cobra.Command{
 	Use:               "clone [user|org]",
-	Short:             "Clone all active repos from an org or user.",
-	Long:              `Clone all active repos from an org or user.`,
+	Short:             "Clone all active repos from an org or user",
+	Long:              `Clone all active (non-archived) repositories from a GitHub org or user into the target directory.`,
 	Args:              cobra.MaximumNArgs(1),
 	ValidArgsFunction: createCmdValidArgsFunc,
 	PersistentPreRun:  setupClient,

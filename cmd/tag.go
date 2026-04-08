@@ -33,8 +33,8 @@ func init() {
 
 var tagCmd = &cobra.Command{
 	Use:               "tag",
-	Short:             "Create, list, or delete tags in repositories",
-	Long:              `Create, list, or delete tags in repositories`,
+	Short:             "Create, list, or delete tags across all repos in a directory",
+	Long:              `Create, list, or delete tags across all repos in a directory.`,
 	ValidArgsFunction: tagCmdValidArgsFunc,
 	PersistentPreRun:  setupClient,
 	RunE:              tagFunc,

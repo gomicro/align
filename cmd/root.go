@@ -39,7 +39,7 @@ func initEnvs() {
 
 var RootCmd = &cobra.Command{
 	Use:   "align [flags]",
-	Short: "Tool for managing repos",
+	Short: "Tool for managing git repos together",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if _, err := exec.LookPath("git"); err != nil {
 			return fmt.Errorf("git is not installed or not on PATH — it is required for align to function")

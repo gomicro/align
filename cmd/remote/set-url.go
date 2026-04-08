@@ -16,8 +16,8 @@ func init() {
 
 var setURLCmd = &cobra.Command{
 	Use:   "set-url <remote_name> <base_url>",
-	Short: "Set the URL for a remote repository.",
-	Long:  "Set the URL for a remote repository.",
+	Short: "Set the URL for a remote across all repos.",
+	Long:  "Update the URL of a named remote across all repos in a directory.",
 	Args:  cobra.ExactArgs(2),
 	RunE:  setURLFunc,
 }

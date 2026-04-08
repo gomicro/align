@@ -27,7 +27,7 @@ func init() {
 var pullCmd = &cobra.Command{
 	Use:              "pull",
 	Short:            "Pull all repos in a directory",
-	Long:             `Pull all repos in a directory.`,
+	Long:             `Fetch and integrate remote changes across all repos in a directory.`,
 	PersistentPreRun: setupClient,
 	RunE:             pullFunc,
 }

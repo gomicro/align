@@ -32,7 +32,7 @@ func init() {
 var pushCmd = &cobra.Command{
 	Use:               "push",
 	Short:             "Push all repos in a directory",
-	Long:              `Push all repos in a directory.`,
+	Long:              `Push local commits to the remote across all repos in a directory.`,
 	ValidArgsFunction: pushCmdValidArgsFunc,
 	PersistentPreRun:  setupClient,
 	RunE:              pushFunc,

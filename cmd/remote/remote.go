@@ -24,8 +24,8 @@ func init() {
 
 var RemoteCmd = &cobra.Command{
 	Use:              "remote",
-	Short:            "manage repositories remotes",
-	Long:             "manage repositories remotes",
+	Short:            "Manage remotes across all repos in a directory",
+	Long:             "Add, remove, rename, or update remotes across all repos in a directory.",
 	PersistentPreRun: setupClient,
 	RunE:             remoteFunc,
 }

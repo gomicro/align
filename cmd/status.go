@@ -16,7 +16,7 @@ func init() {
 
 	statusCmd.Flags().BoolVarP(&short, "short", "s", false, "show status in short format")
 	statusCmd.Flags().BoolVarP(&showBranch, "branch", "b", false, "show branch and upstream tracking info")
-	statusCmd.Flags().BoolVar(&ignoreEmtpy, "ignore-empty", false, "ignore repos with no changes (most useful with --short)")
+	statusCmd.Flags().BoolVar(&ignoreEmpty, "ignore-empty", false, "ignore repos with no changes (most useful with --short)")
 }
 
 var statusCmd = &cobra.Command{
@@ -45,7 +45,7 @@ func statusFunc(cmd *cobra.Command, args []string) error {
 		args = append(args, "--branch")
 	}
 
-	err = clt.StatusRepos(ctx, repoDirs, ignoreEmtpy, args...)
+	err = clt.StatusRepos(ctx, repoDirs, ignoreEmpty, args...)
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("status repos: %w", err)

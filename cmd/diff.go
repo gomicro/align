@@ -14,7 +14,7 @@ var (
 	short            bool
 	nameOnly         bool
 	staged           bool
-	ignoreEmtpy      bool
+	ignoreEmpty      bool
 	ignoreFilePrefix []string
 	matchExtension   []string
 )
@@ -27,7 +27,7 @@ func init() {
 
 	diffCmd.Flags().BoolVar(&staged, "staged", false, "show staged changes instead of unstaged (equivalent to --cached)")
 
-	diffCmd.Flags().BoolVar(&ignoreEmtpy, "ignore-empty", false, "ignore empty diffs")
+	diffCmd.Flags().BoolVar(&ignoreEmpty, "ignore-empty", false, "ignore empty diffs")
 	diffCmd.Flags().BoolVar(&noColor, "no-color", false, "disable color output")
 	diffCmd.Flags().BoolVar(&short, "shortstat", false, "show only the number of changed files, insertions, and deletions")
 	diffCmd.Flags().BoolVar(&nameOnly, "name-only", false, "show only names of changed files")
@@ -97,7 +97,7 @@ func diffFunc(cmd *cobra.Command, args []string) error {
 	}
 
 	cfg := &repos.DiffConfig{
-		IgnoreEmpty:      ignoreEmtpy,
+		IgnoreEmpty:      ignoreEmpty,
 		IgnoreFilePrefix: ignoreFilePrefix,
 		MatchExtension:   matchExtension,
 		Args:             args,

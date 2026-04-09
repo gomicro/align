@@ -21,7 +21,7 @@ func init() {
 
 	logCmd.Flags().BoolVar(&oneline, "oneline", false, "Show each commit on a single line")
 	logCmd.Flags().BoolVar(&noColor, "no-color", false, "Disable color output")
-	logCmd.Flags().BoolVar(&ignoreEmtpy, "ignore-empty", false, "Ignore empty repositories")
+	logCmd.Flags().BoolVar(&ignoreEmpty, "ignore-empty", false, "Ignore empty repositories")
 	logCmd.Flags().IntVarP(&maxCount, "max-count", "n", 0, "Limit the number of commits shown per repo (0 means no limit)")
 }
 
@@ -97,7 +97,7 @@ func logFunc(cmd *cobra.Command, args []string) error {
 		args = append(args, "--color")
 	}
 
-	err = clt.LogRepos(ctx, repoDirs, ignoreEmtpy, args...)
+	err = clt.LogRepos(ctx, repoDirs, ignoreEmpty, args...)
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("log repos: %w", err)

@@ -18,15 +18,14 @@ var (
 func init() {
 	RootCmd.AddCommand(cloneCmd)
 
-	cloneCmd.Flags().StringVar(&dir, "dir", ".", "directory to clone repos into")
 	cloneCmd.Flags().StringSliceVarP(&topics, "topics", "t", []string{}, "clone only repos with matching topics")
 }
 
 var cloneCmd = &cobra.Command{
-	Use:               "clone [user|org]",
+	Use:               "clone [user|org] [directory]",
 	Short:             "Clone all active repos from an org or user",
-	Long:              `Clone all active (non-archived) repositories from a GitHub org or user into the target directory.`,
-	Args:              cobra.MaximumNArgs(1),
+	Long:              `Clone all active (non-archived) repositories from a GitHub org or user into the target directory. The optional directory argument specifies where to clone the repos (defaults to the current directory).`,
+	Args:              cobra.MaximumNArgs(2),
 	ValidArgsFunction: createCmdValidArgsFunc,
 	PersistentPreRun:  setupClient,
 	RunE:              cloneFunc,
@@ -46,6 +45,11 @@ func cloneFunc(cmd *cobra.Command, args []string) error {
 		name = args[0]
 	}
 
+	destDir := "."
+	if len(args) > 1 {
+		destDir = args[1]
+	}
+
 	repos, err := clt.GetRepos(ctx, name)
 	if err != nil {
 		cmd.SilenceUsage = true
@@ -56,7 +60,7 @@ func cloneFunc(cmd *cobra.Command, args []string) error {
 
 	ctx = ctxhelper.WithRepos(ctx, repos)
 
-	_, err = clt.CloneRepos(ctx, dir)
+	_, err = clt.CloneRepos(ctx, destDir)
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("clone repos: %w", err)

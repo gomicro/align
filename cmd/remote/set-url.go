@@ -33,7 +33,7 @@ func setURLFunc(cmd *cobra.Command, args []string) error {
 
 	name, baseURL := args[0], args[1]
 
-	repoDirs, err := clt.GetDirs(ctx, dir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)

@@ -15,7 +15,6 @@ var prune bool
 func init() {
 	RootCmd.AddCommand(fetchCmd)
 
-	fetchCmd.Flags().StringVar(&dir, "dir", ".", "directory to fetch repos in")
 	fetchCmd.Flags().BoolVar(&tags, "tags", false, "fetch all tags")
 	fetchCmd.Flags().BoolVarP(&prune, "prune", "p", false, "remove stale remote-tracking refs after fetching")
 	fetchCmd.Flags().BoolVar(&all, "all", false, "fetch from all configured remotes")
@@ -38,14 +37,9 @@ func fetchCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string)
 
 	setupClient(cmd, args)
 
-	fetchDir, err := cmd.Flags().GetString("dir")
-	if err != nil {
-		fetchDir = "."
-	}
-
 	ctx := context.Background()
 
-	repoDirs, err := clt.GetDirs(ctx, fetchDir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
@@ -67,7 +61,7 @@ func fetchFunc(cmd *cobra.Command, args []string) error {
 		defer uiprogress.Stop()
 	}
 
-	repoDirs, err := clt.GetDirs(ctx, dir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)

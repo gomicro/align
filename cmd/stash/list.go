@@ -23,7 +23,7 @@ func listFunc(cmd *cobra.Command, args []string) error {
 	// list output is always verbose — force it so scribe prints each repo's output
 	ctx := ctxhelper.WithVerbose(context.Background(), true)
 
-	repoDirs, err := clt.GetDirs(ctx, dir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)

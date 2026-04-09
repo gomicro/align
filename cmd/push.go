@@ -21,7 +21,6 @@ var (
 func init() {
 	RootCmd.AddCommand(pushCmd)
 
-	pushCmd.Flags().StringVar(&dir, "dir", ".", "directory to push repos from")
 	pushCmd.Flags().BoolVar(&all, "all", false, "all branches")
 	pushCmd.Flags().BoolVar(&force, "force", false, "force push")
 	pushCmd.Flags().BoolVar(&tags, "tags", false, "push all tags")
@@ -41,14 +40,9 @@ var pushCmd = &cobra.Command{
 func pushCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	setupClient(cmd, args)
 
-	pushDir, err := cmd.Flags().GetString("dir")
-	if err != nil {
-		pushDir = "."
-	}
-
 	ctx := context.Background()
 
-	repoDirs, err := clt.GetDirs(ctx, pushDir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
@@ -83,7 +77,7 @@ func pushFunc(cmd *cobra.Command, args []string) error {
 		defer uiprogress.Stop()
 	}
 
-	repoDirs, err := clt.GetDirs(ctx, dir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)

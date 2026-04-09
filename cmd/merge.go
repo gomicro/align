@@ -21,7 +21,6 @@ var (
 func init() {
 	RootCmd.AddCommand(mergeCmd)
 
-	mergeCmd.Flags().StringVar(&dir, "dir", ".", "directory to merge repos in")
 	mergeCmd.Flags().BoolVar(&noFF, "no-ff", false, "create a merge commit even when fast-forward is possible")
 	mergeCmd.Flags().BoolVar(&ffOnly, "ff-only", false, "refuse to merge unless the result is a fast-forward")
 	mergeCmd.Flags().BoolVar(&squash, "squash", false, "squash commits from the branch into a single commit")
@@ -52,14 +51,9 @@ func mergeCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string)
 
 	setupClient(cmd, args)
 
-	mergeDir, err := cmd.Flags().GetString("dir")
-	if err != nil {
-		mergeDir = "."
-	}
-
 	ctx := context.Background()
 
-	repoDirs, err := clt.GetDirs(ctx, mergeDir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
@@ -81,7 +75,7 @@ func mergeFunc(cmd *cobra.Command, args []string) error {
 		defer uiprogress.Stop()
 	}
 
-	repoDirs, err := clt.GetDirs(ctx, dir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)

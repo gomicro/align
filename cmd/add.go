@@ -15,7 +15,6 @@ var update bool
 func init() {
 	RootCmd.AddCommand(addCmd)
 
-	addCmd.Flags().StringVar(&dir, "dir", ".", "directory to stage files in")
 	addCmd.Flags().BoolVarP(&update, "update", "u", false, "stage modified and deleted files but not new untracked files")
 }
 
@@ -37,7 +36,7 @@ func addFunc(cmd *cobra.Command, args []string) error {
 		defer uiprogress.Stop()
 	}
 
-	repoDirs, err := clt.GetDirs(ctx, dir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)

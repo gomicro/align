@@ -32,7 +32,7 @@ func renameCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string
 
 	ctx := context.Background()
 
-	repoDirs, err := clt.GetDirs(ctx, dir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
@@ -56,7 +56,7 @@ func renameFunc(cmd *cobra.Command, args []string) error {
 
 	oldName, newName := args[0], args[1]
 
-	repoDirs, err := clt.GetDirs(ctx, dir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)

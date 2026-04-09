@@ -13,12 +13,10 @@ import (
 
 var (
 	clt     client.Clienter
-	dir     string
 	verbose bool
 )
 
 func init() {
-	RemoteCmd.Flags().StringVarP(&dir, "dir", "d", ".", "directory to pull repos from")
 	RemoteCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose output")
 }
 
@@ -33,7 +31,7 @@ var RemoteCmd = &cobra.Command{
 func remoteFunc(cmd *cobra.Command, args []string) error {
 	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
 
-	repoDirs, err := clt.GetDirs(ctx, dir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)

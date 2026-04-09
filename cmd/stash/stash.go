@@ -21,6 +21,7 @@ var StashCmd = &cobra.Command{
 	Use:              "stash",
 	Short:            "Stash changes across all repos in a directory",
 	Long:             "Stash uncommitted changes across all repos in a directory.",
+	Args:             cobra.NoArgs,
 	PersistentPreRun: setupClient,
 	RunE:             stashFunc,
 }

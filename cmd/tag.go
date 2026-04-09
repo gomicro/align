@@ -32,9 +32,12 @@ func init() {
 }
 
 var tagCmd = &cobra.Command{
-	Use:               "tag",
-	Short:             "Create, list, or delete tags across all repos in a directory",
-	Long:              `Create, list, or delete tags across all repos in a directory.`,
+	Use:   "tag [<tagname>]",
+	Short: "Create, list, or delete tags across all repos in a directory",
+	Long: `Create, list, or delete tags across all repos in a directory.
+
+When called with no arguments, lists all tags in each repo (equivalent to --list).
+Provide a tag name to create a tag in each repo that has a matching branch or ref.`,
 	ValidArgsFunction: tagCmdValidArgsFunc,
 	PersistentPreRun:  setupClient,
 	RunE:              tagFunc,

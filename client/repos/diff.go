@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -26,6 +27,8 @@ func (r *Repos) DiffRepos(ctx context.Context, dirs []string, cfg *DiffConfig) e
 
 	r.scrb.BeginDescribe("directories")
 	defer r.scrb.EndDescribe()
+
+	var errs []error
 
 	for _, dir := range dirs {
 		out := &bytes.Buffer{}
@@ -51,6 +54,7 @@ func (r *Repos) DiffRepos(ctx context.Context, dirs []string, cfg *DiffConfig) e
 		if err != nil {
 			r.scrb.Error(err)
 			r.scrb.PrintLines(errout)
+			errs = append(errs, fmt.Errorf("%s: %w", dir, err))
 		} else {
 			r.scrb.PrintLines(out)
 		}
@@ -58,7 +62,7 @@ func (r *Repos) DiffRepos(ctx context.Context, dirs []string, cfg *DiffConfig) e
 		r.scrb.EndDescribe()
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 func filterLines(buf *bytes.Buffer, prefixes []string) *bytes.Buffer {

@@ -14,6 +14,7 @@ var (
 	short            bool
 	nameOnly         bool
 	staged           bool
+	check            bool
 	ignoreEmpty      bool
 	ignoreFilePrefix []string
 	matchExtension   []string
@@ -26,6 +27,7 @@ func init() {
 	diffCmd.Flags().StringArrayVar(&matchExtension, "match-extension", []string{}, "only include files in diffs with the given extension(s)")
 
 	diffCmd.Flags().BoolVar(&staged, "staged", false, "show staged changes instead of unstaged (equivalent to --cached)")
+	diffCmd.Flags().BoolVar(&check, "check", false, "exit non-zero if whitespace errors are found (equivalent to git diff --check)")
 
 	diffCmd.Flags().BoolVar(&ignoreEmpty, "ignore-empty", false, "ignore empty diffs")
 	diffCmd.Flags().BoolVar(&noColor, "no-color", false, "disable color output")
@@ -34,6 +36,8 @@ func init() {
 
 	diffCmd.MarkFlagsMutuallyExclusive("shortstat", "name-only")
 	diffCmd.MarkFlagsMutuallyExclusive("shortstat", "ignore-file-prefix")
+	diffCmd.MarkFlagsMutuallyExclusive("check", "shortstat")
+	diffCmd.MarkFlagsMutuallyExclusive("check", "name-only")
 }
 
 var diffCmd = &cobra.Command{
@@ -86,6 +90,8 @@ func diffFunc(cmd *cobra.Command, args []string) error {
 		args = append(args, "--shortstat")
 	case nameOnly:
 		args = append(args, "--name-only")
+	case check:
+		args = append(args, "--check")
 	}
 
 	if staged {

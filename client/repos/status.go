@@ -3,6 +3,7 @@ package repos
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -24,6 +25,8 @@ func (r *Repos) StatusRepos(ctx context.Context, dirs []string, ignoreEmpty bool
 		defer r.scrb.EndDescribe()
 	}
 
+	var errs []error
+
 	for _, dir := range dirs {
 		out := &bytes.Buffer{}
 		errout := &bytes.Buffer{}
@@ -43,6 +46,7 @@ func (r *Repos) StatusRepos(ctx context.Context, dirs []string, ignoreEmpty bool
 		if err != nil {
 			r.scrb.Error(err)
 			r.scrb.PrintLines(errout)
+			errs = append(errs, fmt.Errorf("%s: %w", dir, err))
 		} else {
 			r.scrb.PrintLines(out)
 		}
@@ -50,5 +54,5 @@ func (r *Repos) StatusRepos(ctx context.Context, dirs []string, ignoreEmpty bool
 		r.scrb.EndDescribe()
 	}
 
-	return nil
+	return errors.Join(errs...)
 }

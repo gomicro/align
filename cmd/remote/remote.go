@@ -9,16 +9,10 @@ import (
 	ctxhelper "github.com/gomicro/align/client/context"
 	"github.com/gomicro/align/config"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-var (
-	clt     client.Clienter
-	verbose bool
-)
-
-func init() {
-	RemoteCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose output")
-}
+var clt client.Clienter
 
 var RemoteCmd = &cobra.Command{
 	Use:              "remote",
@@ -29,6 +23,7 @@ var RemoteCmd = &cobra.Command{
 }
 
 func remoteFunc(cmd *cobra.Command, args []string) error {
+	verbose := viper.GetBool("verbose")
 	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
 
 	repoDirs, err := clt.GetDirs(ctx, ".")

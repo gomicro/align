@@ -19,7 +19,6 @@ var (
 func init() {
 	RootCmd.AddCommand(resetCmd)
 
-	resetCmd.Flags().StringVar(&dir, "dir", ".", "directory to reset repos in")
 	resetCmd.Flags().BoolVar(&hard, "hard", false, "reset index and working tree, discarding all uncommitted changes")
 	resetCmd.Flags().BoolVar(&soft, "soft", false, "reset HEAD only, keeping all changes staged")
 	resetCmd.Flags().BoolVar(&mixed, "mixed", false, "reset HEAD and index, keeping changes in the working tree (unstaged)")
@@ -44,14 +43,9 @@ func resetCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string)
 
 	setupClient(cmd, args)
 
-	resetDir, err := cmd.Flags().GetString("dir")
-	if err != nil {
-		resetDir = "."
-	}
-
 	ctx := context.Background()
 
-	repoDirs, err := clt.GetDirs(ctx, resetDir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
@@ -77,7 +71,7 @@ func resetFunc(cmd *cobra.Command, args []string) error {
 		defer uiprogress.Stop()
 	}
 
-	repoDirs, err := clt.GetDirs(ctx, dir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)

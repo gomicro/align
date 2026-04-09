@@ -20,7 +20,6 @@ var (
 func init() {
 	RootCmd.AddCommand(commitCmd)
 
-	commitCmd.Flags().StringVar(&dir, "dir", ".", "directory to commit repos in")
 	commitCmd.Flags().StringVarP(&message, "message", "m", "", "commit message")
 	commitCmd.Flags().BoolVarP(&all, "all", "a", false, "stage all tracked modified and deleted files before committing")
 	commitCmd.Flags().BoolVar(&amend, "amend", false, "amend the last commit")
@@ -47,7 +46,7 @@ func commitFunc(cmd *cobra.Command, args []string) error {
 		defer uiprogress.Stop()
 	}
 
-	repoDirs, err := clt.GetDirs(ctx, dir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)

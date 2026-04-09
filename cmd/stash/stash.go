@@ -15,12 +15,7 @@ import (
 
 var (
 	clt client.Clienter
-	dir string
 )
-
-func init() {
-	StashCmd.Flags().StringVarP(&dir, "dir", "d", ".", "directory to stash repos in")
-}
 
 var StashCmd = &cobra.Command{
 	Use:              "stash",
@@ -39,7 +34,7 @@ func stashFunc(cmd *cobra.Command, args []string) error {
 		defer uiprogress.Stop()
 	}
 
-	repoDirs, err := clt.GetDirs(ctx, dir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)

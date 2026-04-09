@@ -63,7 +63,7 @@ func branchCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string
 
 	ctx := context.Background()
 
-	repoDirs, err := clt.GetDirs(ctx, dir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
@@ -80,7 +80,7 @@ func branchFunc(cmd *cobra.Command, args []string) error {
 	verbose := viper.GetBool("verbose")
 	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
 
-	repoDirs, err := clt.GetDirs(ctx, dir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)

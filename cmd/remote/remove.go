@@ -33,7 +33,7 @@ func removeFunc(cmd *cobra.Command, args []string) error {
 
 	name := args[0]
 
-	repoDirs, err := clt.GetDirs(ctx, dir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)

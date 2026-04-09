@@ -12,8 +12,6 @@ import (
 
 func init() {
 	RootCmd.AddCommand(checkoutCmd)
-
-	checkoutCmd.Flags().StringVar(&dir, "dir", ".", "directory to checkout repos from")
 }
 
 var checkoutCmd = &cobra.Command{
@@ -33,10 +31,7 @@ func checkoutCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete stri
 
 	setupClient(cmd, args)
 
-	checkoutDir, err := cmd.Flags().GetString("dir")
-	if err != nil {
-		checkoutDir = "."
-	}
+	checkoutDir := "."
 
 	ctx := context.Background()
 
@@ -62,7 +57,7 @@ func checkoutFunc(cmd *cobra.Command, args []string) error {
 		defer uiprogress.Stop()
 	}
 
-	repoDirs, err := clt.GetDirs(ctx, dir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)

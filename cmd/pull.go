@@ -11,14 +11,12 @@ import (
 )
 
 var (
-	dir  string
 	tags bool
 )
 
 func init() {
 	RootCmd.AddCommand(pullCmd)
 
-	pullCmd.Flags().StringVar(&dir, "dir", ".", "directory to pull repos from")
 	pullCmd.Flags().BoolVar(&tags, "tags", false, "pull tags")
 	pullCmd.Flags().BoolVar(&prune, "prune", false, "remove stale remote-tracking refs after pulling")
 	pullCmd.Flags().BoolVar(&ffOnly, "ff-only", false, "refuse to pull unless the result is a fast-forward")
@@ -41,7 +39,7 @@ func pullFunc(cmd *cobra.Command, args []string) error {
 		defer uiprogress.Stop()
 	}
 
-	repoDirs, err := clt.GetDirs(ctx, dir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)

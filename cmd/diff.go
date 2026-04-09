@@ -22,8 +22,6 @@ var (
 func init() {
 	RootCmd.AddCommand(diffCmd)
 
-	diffCmd.Flags().StringVar(&dir, "dir", ".", "directory to diff repos from")
-
 	diffCmd.Flags().StringArrayVar(&ignoreFilePrefix, "ignore-file-prefix", []string{}, "ignore files in diffs with the given prefix(es)")
 	diffCmd.Flags().StringArrayVar(&matchExtension, "match-extension", []string{}, "only include files in diffs with the given extension(s)")
 
@@ -58,14 +56,9 @@ func diffCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) 
 
 	setupClient(cmd, args)
 
-	diffDir, err := cmd.Flags().GetString("dir")
-	if err != nil {
-		diffDir = "."
-	}
-
 	ctx := context.Background()
 
-	repoDirs, err := clt.GetDirs(ctx, diffDir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
@@ -82,7 +75,7 @@ func diffFunc(cmd *cobra.Command, args []string) error {
 	verbose := viper.GetBool("verbose")
 	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
 
-	repoDirs, err := clt.GetDirs(ctx, dir)
+	repoDirs, err := clt.GetDirs(ctx, ".")
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)

@@ -40,6 +40,13 @@ func initEnvs() {
 var RootCmd = &cobra.Command{
 	Use:   "align [flags]",
 	Short: "Tool for managing git repos together",
+	Long: `align fans out git operations across every git repository in the current directory.
+
+Each sub-command mirrors its git equivalent and runs it against all repos found in the working directory.
+
+Use --verbose (-v) when scripting or using align with AI tools. Verbose mode replaces the
+interactive progress bars with structured per-repo output written to stdout, which is easier
+to parse and redirect.`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if _, err := exec.LookPath("git"); err != nil {
 			return fmt.Errorf("git is not installed or not on PATH — it is required for align to function")

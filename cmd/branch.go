@@ -31,7 +31,7 @@ func init() {
 }
 
 var branchCmd = &cobra.Command{
-	Use:               "branch",
+	Use:               "branch [<branchname>]",
 	Short:             "Manage branches across all repos in a directory",
 	Long:              `List, create, delete, move, or show the current branch across all repos in a directory.`,
 	Args:              cobra.MaximumNArgs(2),

@@ -24,7 +24,7 @@ type Clienter interface {
 	GetRepos(ctx context.Context, name string) ([]*github.Repository, error)
 	GetTagNames(ctx context.Context, dirs []string) ([]string, error)
 	ListTags(ctx context.Context, repoDirs []string, args ...string) error
-	LogRepos(ctx context.Context, repoDirs []string, ignoreEmtpy bool, args ...string) error
+	LogRepos(ctx context.Context, repoDirs []string, ignoreEmpty bool, args ...string) error
 	MergeRepos(ctx context.Context, repoDirs []string, args ...string) error
 	PullRepos(ctx context.Context, repoDirs []string, args ...string) error
 	PushRepos(ctx context.Context, repoDirs []string, args ...string) error

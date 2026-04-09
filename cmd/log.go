@@ -19,10 +19,10 @@ var (
 func init() {
 	RootCmd.AddCommand(logCmd)
 
-	logCmd.Flags().BoolVar(&oneline, "oneline", false, "Show each commit on a single line")
-	logCmd.Flags().BoolVar(&noColor, "no-color", false, "Disable color output")
-	logCmd.Flags().BoolVar(&ignoreEmpty, "ignore-empty", false, "Ignore empty repositories")
-	logCmd.Flags().IntVarP(&maxCount, "max-count", "n", 0, "Limit the number of commits shown per repo (0 means no limit)")
+	logCmd.Flags().BoolVar(&oneline, "oneline", false, "show each commit on a single line")
+	logCmd.Flags().BoolVar(&noColor, "no-color", false, "disable color output")
+	logCmd.Flags().BoolVar(&ignoreEmpty, "ignore-empty", false, "ignore empty repositories")
+	logCmd.Flags().IntVarP(&maxCount, "max-count", "n", 0, "limit the number of commits shown per repo (0 means no limit)")
 }
 
 var logCmd = &cobra.Command{

@@ -26,7 +26,7 @@ func init() {
 }
 
 var logCmd = &cobra.Command{
-	Use:   "log",
+	Use:   "log [<since>..<until>]",
 	Short: "Show commit logs for all repos in a directory",
 	Long: `Show commit logs all repos in a directory. Since commit hashes would not be the same between
 multiple repos this command really only makes sense when used with two branch names or two tags.`,

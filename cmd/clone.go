@@ -24,7 +24,11 @@ func init() {
 var cloneCmd = &cobra.Command{
 	Use:               "clone [user|org] [directory]",
 	Short:             "Clone all active repos from an org or user",
-	Long:              `Clone all active (non-archived) repositories from a GitHub org or user into the target directory. The optional directory argument specifies where to clone the repos (defaults to the current directory).`,
+	Long: `Clone all active (non-archived) repositories from a GitHub org or user into the target directory.
+The optional directory argument specifies where to clone the repos (defaults to the current directory).
+
+When --topics is provided multiple times, only repos that have ALL specified topics are cloned (AND logic).
+To clone repos matching any one topic, run separate clone invocations per topic.`,
 	Args:              cobra.MaximumNArgs(2),
 	ValidArgsFunction: createCmdValidArgsFunc,
 	PersistentPreRun:  setupClient,

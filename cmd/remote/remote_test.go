@@ -5,12 +5,13 @@ import (
 	"testing"
 
 	"github.com/gomicro/align/client/testclient"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRemote(t *testing.T) {
-	verbose = true
-	t.Cleanup(func() { verbose = false })
+	viper.Set("verbose", true)
+	t.Cleanup(func() { viper.Set("verbose", false) })
 
 	t.Run("calls expected commands", func(t *testing.T) {
 		tc := testclient.New()

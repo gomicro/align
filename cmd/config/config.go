@@ -16,9 +16,14 @@ var configValidArgs = []string{
 }
 
 var ConfigCmd = &cobra.Command{
-	Use:       "config [config_field] [value]",
-	Short:     "Configure align settings",
-	Long:      `Get or set align configuration values.`,
+	Use:   "config <field> <value>",
+	Short: "Set align configuration values",
+	Long: `Set align configuration values in ~/.align/config.
+
+Valid fields:
+
+  github.limits.burst                 burstable rate for the GitHub client (default: 25)
+  github.limits.requests_per_second   maximum requests per second for the GitHub client (default: 10)`,
 	Args:      cobra.ExactArgs(2),
 	Run:       configFunc,
 	ValidArgs: configValidArgs,

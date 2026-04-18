@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+// DiffConfig controls filtering and output options for DiffRepos.
 type DiffConfig struct {
 	IgnoreEmpty      bool
 	IgnoreFilePrefix []string
@@ -17,6 +18,7 @@ type DiffConfig struct {
 	Args             []string
 }
 
+// DiffRepos runs git diff across all dirs using cfg to filter output.
 func (r *Repos) DiffRepos(ctx context.Context, dirs []string, cfg *DiffConfig) error {
 	args := append([]string{"diff"}, cfg.Args...)
 

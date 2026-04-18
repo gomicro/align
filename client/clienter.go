@@ -8,6 +8,7 @@ import (
 	"github.com/google/go-github/github"
 )
 
+// Clienter is the interface implemented by Client, used to inject fakes in cmd tests.
 type Clienter interface {
 	Add(ctx context.Context, dirs []string, name, baseURL string) error
 	Branches(ctx context.Context, repoDirs []string, args ...string) error

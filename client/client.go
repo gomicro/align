@@ -1,3 +1,4 @@
+// Package client wires together the repos and remotes layers and exposes a unified Client.
 package client
 
 import (
@@ -23,6 +24,7 @@ import (
 	"golang.org/x/time/rate"
 )
 
+// Client provides the full set of cross-repo git operations backed by the GitHub API.
 type Client struct {
 	*repos.Repos
 	remoteMgr   *remotes.Remotes
@@ -32,6 +34,7 @@ type Client struct {
 	ghHTTPSAuth *sshgit.Password
 }
 
+// New constructs a Client from cfg, initialising SSH auth, HTTPS auth, the GitHub API client, and rate limiter.
 func New(cfg *config.Config) (*Client, error) {
 	pool := trust.New()
 
@@ -145,6 +148,7 @@ func knownHostsCallback() (ssh.HostKeyCallback, error) {
 	return cb, nil
 }
 
+// GetLogins returns the authenticated user's login and all org logins, lowercased.
 func (c *Client) GetLogins(ctx context.Context) ([]string, error) {
 	logins := []string{}
 
@@ -181,22 +185,27 @@ func (c *Client) GetLogins(ctx context.Context) ([]string, error) {
 	return logins, nil
 }
 
+// Remotes runs git remote across all dirs.
 func (c *Client) Remotes(ctx context.Context, dirs []string, args ...string) error {
 	return c.remoteMgr.Remotes(ctx, dirs, args...)
 }
 
+// Add runs git remote add across all dirs, building the remote URL from baseURL and each dir basename.
 func (c *Client) Add(ctx context.Context, dirs []string, name, baseURL string) error {
 	return c.remoteMgr.Add(ctx, dirs, name, baseURL)
 }
 
+// Remove runs git remote remove across all dirs.
 func (c *Client) Remove(ctx context.Context, dirs []string, name string) error {
 	return c.remoteMgr.Remove(ctx, dirs, name)
 }
 
+// Rename runs git remote rename across all dirs.
 func (c *Client) Rename(ctx context.Context, dirs []string, oldName, newName string) error {
 	return c.remoteMgr.Rename(ctx, dirs, oldName, newName)
 }
 
+// SetURLs runs git remote set-url across all dirs, building the URL from baseURL and each dir basename.
 func (c *Client) SetURLs(ctx context.Context, dirs []string, name, baseURL string) error {
 	return c.remoteMgr.SetURLs(ctx, dirs, name, baseURL)
 }

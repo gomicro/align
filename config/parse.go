@@ -9,8 +9,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// ParseFromFile reads the align config file from the home directory. It returns
-// any errors it encounters with parsing the file.
+// ParseFromFile reads ~/.align/config, creating the config directory if absent.
 func ParseFromFile() (*Config, error) {
 	usr, err := user.Current()
 	if err != nil {
@@ -54,9 +53,7 @@ func ParseFromFile() (*Config, error) {
 	return &conf, nil
 }
 
-// DirExists returns a bool and error representing whether or not a config
-// directory exists for the current user, and any errors it encounters with
-// statting the existence of the directory.
+// DirExists reports whether the ~/.align config directory exists.
 func DirExists() (bool, error) {
 	usr, err := user.Current()
 	if err != nil {
@@ -74,9 +71,7 @@ func DirExists() (bool, error) {
 	return true, nil
 }
 
-// FileExists returns a bool and error representing whether or not a
-// config file exists for the current user, and any errors it encounters with
-// statting the existence of the file.
+// FileExists reports whether the ~/.align/config file exists.
 func FileExists() (bool, error) {
 	usr, err := user.Current()
 	if err != nil {
@@ -94,8 +89,7 @@ func FileExists() (bool, error) {
 	return true, nil
 }
 
-// CreateDir creates the config directory and all necessary parent directories
-// missing. It returns any error it encounters with creating the directory.
+// CreateDir creates the ~/.align config directory, including any missing parents.
 func CreateDir() error {
 	usr, err := user.Current()
 	if err != nil {

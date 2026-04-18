@@ -1,6 +1,6 @@
 package config
 
-// GithubHost represents a single host for which align has a configuration
+// GithubHost holds authentication and rate-limit settings for a GitHub host.
 type GithubHost struct {
 	Token          string  `yaml:"token"`
 	Username       string  `yaml:"username"`
@@ -9,7 +9,7 @@ type GithubHost struct {
 	Limits         *Limits `yaml:"limits"`
 }
 
-// Limits represents a limits override for the client
+// Limits configures GitHub API client request rates.
 type Limits struct {
 	RequestsPerSecond int `yaml:"request_per_second"`
 	Burst             int `yaml:"burst"`

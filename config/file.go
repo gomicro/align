@@ -1,3 +1,4 @@
+// Package config handles reading and writing the align configuration at ~/.align/config.
 package config
 
 import (
@@ -23,19 +24,17 @@ var defaultConfig = Config{
 	},
 }
 
-// Config represents the config file for align
+// Config holds the top-level align configuration read from ~/.align/config.
 type Config struct {
 	Github *GithubHost `yaml:"github.com"`
 }
 
-// New takes a token string and creates the most basic config capable of being
-// written.
+// New returns a minimal Config with the given GitHub token set.
 func New(tkn string) *Config {
 	return &Config{Github: &GithubHost{Token: tkn}}
 }
 
-// WriteFile writes the file to the defined location for the current user, and
-// returns any errors encountered doing so.
+// WriteFile marshals and writes the config to ~/.align/config.
 func (c *Config) WriteFile() error {
 	b, err := yaml.Marshal(c)
 	if err != nil {

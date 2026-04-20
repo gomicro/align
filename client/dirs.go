@@ -7,6 +7,7 @@ import (
 	"path"
 )
 
+// GetDirs returns subdirectories of baseDir that contain a .git directory.
 func (c *Client) GetDirs(ctx context.Context, baseDir string) ([]string, error) {
 	files, err := os.ReadDir(baseDir)
 	if err != nil {

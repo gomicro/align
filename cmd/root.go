@@ -26,8 +26,15 @@ func init() {
 	RootCmd.AddCommand(stash.StashCmd)
 
 	RootCmd.PersistentFlags().BoolP("verbose", "v", false, "show more verbose output")
+	RootCmd.PersistentFlags().Bool("no-color", false, "disable color in verbose output")
 
 	err := viper.BindPFlag("verbose", RootCmd.PersistentFlags().Lookup("verbose"))
+	if err != nil {
+		fmt.Printf("Error setting up: %s\n", err)
+		os.Exit(1)
+	}
+
+	err = viper.BindPFlag("no-color", RootCmd.PersistentFlags().Lookup("no-color"))
 	if err != nil {
 		fmt.Printf("Error setting up: %s\n", err)
 		os.Exit(1)
@@ -70,7 +77,12 @@ func setupClient(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	clt, err = client.New(c)
+	var opts []client.Option
+	if viper.GetBool("no-color") {
+		opts = append(opts, client.WithNoColor())
+	}
+
+	clt, err = client.New(c, opts...)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)
 		os.Exit(1)

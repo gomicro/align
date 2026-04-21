@@ -172,73 +172,131 @@ func authHandler(ctx context.Context, conf *oauth2.Config, state string, token c
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Align — Authorized</title>
   <style>
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg:      #0d1117;
-        --card-bg: #161b22;
-        --border:  #30363d;
-        --text:    #e6edf3;
-        --muted:   #8b949e;
-        --accent:  #3fb950;
-      }
+    :root {
+      color-scheme: light dark;
     }
-    @media (prefers-color-scheme: light) {
-      :root {
-        --bg:      #f6f8fa;
-        --card-bg: #ffffff;
-        --border:  #d0d7de;
-        --text:    #1f2328;
-        --muted:   #636c76;
-        --accent:  #1a7f37;
-      }
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: var(--bg);
-      color: var(--text);
+      margin: 0;
+      padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background-color: light-dark(#f6f8fa, #0d1117);
       min-height: 100vh;
       display: flex;
-      align-items: center;
-      justify-content: center;
+      flex-direction: column;
     }
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 48px 56px;
-      max-width: 420px;
-      width: 100%;
-      text-align: center;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+    .header {
+      background-color: #161b22;
+      padding: 20px 24px 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
     }
-    .icon {
-      font-size: 48px;
-      line-height: 1;
-      margin-bottom: 20px;
-    }
-    h1 {
+    .logo {
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
       font-size: 22px;
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: var(--accent);
+      font-weight: 700;
+      color: #e6edf3;
+      letter-spacing: -0.5px;
     }
-    p {
+    .title {
+      color: #e6edf3;
+      margin: 0 0 -30px;
+      width: 100%;
+      font-weight: 700;
+      font-size: 24px;
+      line-height: 30px;
+      text-align: center;
+      letter-spacing: -0.48px;
+    }
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 0 20px 60px;
+      margin-top: -30px;
+    }
+    .container {
+      background-color: light-dark(#ffffff, #161b22);
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 600px;
+      width: 100%;
+      border: 1px solid light-dark(#d0d7de, #30363d);
+    }
+    .success-text,
+    .error-text {
+      color: light-dark(#1f2328, #c9d1d9);
       font-size: 14px;
-      color: var(--muted);
-      line-height: 1.6;
+      line-height: 20px;
+    }
+    .success-content {
+      background-color: light-dark(#dafbe1, #0d1f17);
+      border: 2px solid light-dark(#1a7f37, #3fb950);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .error-content {
+      background-color: light-dark(#fff5f5, #1f0000);
+      border: 2px solid light-dark(#cf222e, #f85149);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .success-content svg,
+    .error-content svg {
+      flex-shrink: 0;
+    }
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="icon">✅</div>
-    <h1>Authorization complete</h1>
-    <p>Align is connected to GitHub. You can close this tab and return to your terminal.</p>
-  </div>
+  <header class="header">
+    <div class="logo">align</div>
+    <h1 class="title">GitHub Authorization</h1>
+  </header>
+  <main class="main">
+    <div class="container">
+      <div id="success-message" class="success-content">
+        <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" focusable="false" aria-hidden="true">
+          <circle cx="8" cy="8" r="7" fill="none" stroke="light-dark(#1a7f37, #3fb950)" stroke-width="2"></circle>
+          <path d="M4.5 7.5 7 10l4-5" fill="none" stroke-linejoin="round" stroke="light-dark(#1a7f37, #3fb950)" stroke-width="2"></path>
+        </svg>
+        <div class="success-text">
+          Authorization complete. Align is connected to GitHub. You can close this tab and return to your terminal.
+        </div>
+      </div>
+      <div id="error-message" class="error-content hidden">
+        <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" focusable="false" aria-hidden="true">
+          <circle cx="8" cy="8" r="7" fill="none" stroke="light-dark(#cf222e, #f85149)" stroke-width="2"></circle>
+          <path d="m5.5 5.5 5 5M10.5 5.5l-5 5" stroke="light-dark(#cf222e, #f85149)" stroke-width="2"></path>
+        </svg>
+        <div class="error-text">Authorization failed: <span id="error-text"></span></div>
+      </div>
+    </div>
+  </main>
+  <script>
+    window.onload = () => {
+      const params = new URLSearchParams(window.location.search);
+      const error = params.get('error');
+      if (error) {
+        document.getElementById('success-message').classList.add('hidden');
+        document.getElementById('error-message').classList.remove('hidden');
+        document.getElementById('error-text').innerText = error;
+      }
+    };
+  </script>
 </body>
 </html>`
 

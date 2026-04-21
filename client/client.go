@@ -34,8 +34,27 @@ type Client struct {
 	ghHTTPSAuth *sshgit.Password
 }
 
+// Option configures a Client.
+type Option func(*clientOptions)
+
+type clientOptions struct {
+	noColor bool
+}
+
+// WithNoColor disables ANSI color codes in verbose output.
+func WithNoColor() Option {
+	return func(o *clientOptions) {
+		o.noColor = true
+	}
+}
+
 // New constructs a Client from cfg, initialising SSH auth, HTTPS auth, the GitHub API client, and rate limiter.
-func New(cfg *config.Config) (*Client, error) {
+func New(cfg *config.Config, opts ...Option) (*Client, error) {
+	co := &clientOptions{}
+	for _, o := range opts {
+		o(co)
+	}
+
 	pool := trust.New()
 
 	certs, err := pool.CACerts()
@@ -109,12 +128,19 @@ func New(cfg *config.Config) (*Client, error) {
 		}
 	}
 
-	t := &scribe.Theme{
-		Describe: scribe.NoopDecorator,
-		Print:    scribe.NoopDecorator,
-		Error: func(err error) string {
-			return fmt.Sprintf("%s %s\n", color.RedFg("Error:"), err)
-		},
+	var t *scribe.Theme
+	if co.noColor {
+		t = scribe.DefaultTheme
+	} else {
+		t = &scribe.Theme{
+			Describe: func(s string) string {
+				return color.CyanFg(s)
+			},
+			Print: scribe.NoopDecorator,
+			Error: func(err error) string {
+				return fmt.Sprintf("%s %s\n", color.RedFg("Error:"), err)
+			},
+		}
 	}
 
 	scrb, err := scribe.NewScribe(os.Stdout, t)

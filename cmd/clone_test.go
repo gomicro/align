@@ -57,12 +57,64 @@ func TestClone(t *testing.T) {
 	})
 }
 
+func TestExcludeByTopics(t *testing.T) {
+	repoWithTopics := func(topics ...string) *github.Repository {
+		return &github.Repository{Topics: topics}
+	}
+
+	t.Run("returns all repos when no exclude topics", func(t *testing.T) {
+		t.Parallel()
+
+		repos := []*github.Repository{
+			repoWithTopics("go", "cli"),
+			repoWithTopics("rust"),
+		}
+
+		result := excludeByTopics(repos, []string{})
+		assert.Equal(t, repos, result)
+	})
+
+	t.Run("excludes repos with matching topic", func(t *testing.T) {
+		t.Parallel()
+
+		keep := repoWithTopics("go", "cli")
+		skip := repoWithTopics("rust")
+
+		result := excludeByTopics([]*github.Repository{keep, skip}, []string{"rust"})
+		assert.Equal(t, []*github.Repository{keep}, result)
+	})
+
+	t.Run("excludes repos matching any excluded topic", func(t *testing.T) {
+		t.Parallel()
+
+		keep := repoWithTopics("go")
+		skipA := repoWithTopics("rust")
+		skipB := repoWithTopics("python")
+
+		result := excludeByTopics([]*github.Repository{keep, skipA, skipB}, []string{"rust", "python"})
+		assert.Equal(t, []*github.Repository{keep}, result)
+	})
+
+	t.Run("returns nil when all repos excluded", func(t *testing.T) {
+		t.Parallel()
+
+		repos := []*github.Repository{
+			repoWithTopics("rust"),
+		}
+
+		result := excludeByTopics(repos, []string{"rust"})
+		assert.Nil(t, result)
+	})
+}
+
 func TestFilterByTopics(t *testing.T) {
 	repoWithTopics := func(topics ...string) *github.Repository {
 		return &github.Repository{Topics: topics}
 	}
 
 	t.Run("returns all repos when no topics filter", func(t *testing.T) {
+		t.Parallel()
+
 		repos := []*github.Repository{
 			repoWithTopics("go", "cli"),
 			repoWithTopics("rust"),
@@ -73,6 +125,8 @@ func TestFilterByTopics(t *testing.T) {
 	})
 
 	t.Run("filters repos by single topic", func(t *testing.T) {
+		t.Parallel()
+
 		match := repoWithTopics("go", "cli")
 		noMatch := repoWithTopics("rust")
 
@@ -81,6 +135,8 @@ func TestFilterByTopics(t *testing.T) {
 	})
 
 	t.Run("filters repos requiring all topics present", func(t *testing.T) {
+		t.Parallel()
+
 		both := repoWithTopics("go", "cli")
 		onlyOne := repoWithTopics("go")
 
@@ -89,6 +145,8 @@ func TestFilterByTopics(t *testing.T) {
 	})
 
 	t.Run("returns nil when no repos match", func(t *testing.T) {
+		t.Parallel()
+
 		repos := []*github.Repository{
 			repoWithTopics("rust"),
 		}

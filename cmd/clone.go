@@ -12,13 +12,15 @@ import (
 )
 
 var (
-	topics []string
+	topics        []string
+	excludeTopics []string
 )
 
 func init() {
 	RootCmd.AddCommand(cloneCmd)
 
 	cloneCmd.Flags().StringSliceVarP(&topics, "topics", "t", []string{}, "clone only repos with matching topics")
+	cloneCmd.Flags().StringSliceVarP(&excludeTopics, "exclude-topics", "e", []string{}, "skip repos that have any of the specified topics")
 }
 
 var cloneCmd = &cobra.Command{
@@ -27,8 +29,9 @@ var cloneCmd = &cobra.Command{
 	Long: `Clone all active (non-archived) repositories from a GitHub org or user into the target directory.
 The optional directory argument specifies where to clone the repos (defaults to the current directory).
 
-When --topics is provided multiple times, only repos that have ALL specified topics are cloned (AND logic).
-To clone repos matching any one topic, run separate clone invocations per topic.`,
+When --topics is provided, only repos that have ALL specified topics are cloned (AND logic).
+When --exclude-topics is provided, repos that have ANY of the specified topics are skipped.
+Both flags may be combined: clone repos with topic A but not topic B.`,
 	Args:              cobra.MaximumNArgs(2),
 	ValidArgsFunction: createCmdValidArgsFunc,
 	PersistentPreRun:  setupClient,
@@ -61,6 +64,7 @@ func cloneFunc(cmd *cobra.Command, args []string) error {
 	}
 
 	repos = filterByTopics(repos, topics)
+	repos = excludeByTopics(repos, excludeTopics)
 
 	ctx = ctxhelper.WithRepos(ctx, repos)
 
@@ -106,6 +110,35 @@ func filterByTopics(repos []*github.Repository, topics []string) []*github.Repos
 		}
 
 		if allFound {
+			filtered = append(filtered, r)
+		}
+	}
+
+	return filtered
+}
+
+func excludeByTopics(repos []*github.Repository, excludeTopics []string) []*github.Repository {
+	if len(excludeTopics) == 0 {
+		return repos
+	}
+
+	excludeSet := make(map[string]struct{}, len(excludeTopics))
+	for _, t := range excludeTopics {
+		excludeSet[t] = struct{}{}
+	}
+
+	var filtered []*github.Repository
+
+	for _, r := range repos {
+		excluded := false
+		for _, t := range r.Topics {
+			if _, ok := excludeSet[t]; ok {
+				excluded = true
+				break
+			}
+		}
+
+		if !excluded {
 			filtered = append(filtered, r)
 		}
 	}

@@ -30,7 +30,6 @@ func init() {
 	diffCmd.Flags().BoolVar(&check, "check", false, "exit non-zero if whitespace errors are found (equivalent to git diff --check)")
 
 	diffCmd.Flags().BoolVar(&ignoreEmpty, "ignore-empty", false, "ignore empty diffs")
-	diffCmd.Flags().BoolVar(&noColor, "no-color", false, "disable color output")
 	diffCmd.Flags().BoolVar(&short, "shortstat", false, "show only the number of changed files, insertions, and deletions")
 	diffCmd.Flags().BoolVar(&nameOnly, "name-only", false, "show only names of changed files")
 
@@ -77,6 +76,7 @@ func diffCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) 
 
 func diffFunc(cmd *cobra.Command, args []string) error {
 	verbose := viper.GetBool("verbose")
+	noColor := viper.GetBool("no-color")
 	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
 
 	repoDirs, err := clt.GetDirs(ctx, ".")

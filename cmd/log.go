@@ -12,7 +12,6 @@ import (
 
 var (
 	oneline  bool
-	noColor  bool
 	maxCount int
 )
 
@@ -20,7 +19,6 @@ func init() {
 	RootCmd.AddCommand(logCmd)
 
 	logCmd.Flags().BoolVar(&oneline, "oneline", false, "show each commit on a single line")
-	logCmd.Flags().BoolVar(&noColor, "no-color", false, "disable color output")
 	logCmd.Flags().BoolVar(&ignoreEmpty, "ignore-empty", false, "ignore empty repositories")
 	logCmd.Flags().IntVarP(&maxCount, "max-count", "n", 0, "limit the number of commits shown per repo (0 means no limit)")
 }
@@ -77,6 +75,7 @@ func logCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) (
 
 func logFunc(cmd *cobra.Command, args []string) error {
 	verbose := viper.GetBool("verbose")
+	noColor := viper.GetBool("no-color")
 	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
 
 	repoDirs, err := clt.GetDirs(ctx, ".")

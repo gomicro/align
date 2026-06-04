@@ -73,6 +73,19 @@ func TestTag(t *testing.T) {
 		tc.AssertCommandsCalled(t, "GetDirs")
 	})
 
+	t.Run("lists tags with ignore-empty flag", func(t *testing.T) {
+		ignoreEmpty = true
+		t.Cleanup(func() { ignoreEmpty = false })
+
+		tc := testclient.New()
+		clt = tc
+
+		err := tagFunc(tagCmd, []string{})
+		assert.NoError(t, err)
+
+		tc.AssertCommandsCalled(t, "GetDirs", "ListTags")
+	})
+
 	t.Run("returns error on list tags failure", func(t *testing.T) {
 		tc := testclient.New()
 		tc.Errors["ListTags"] = errors.New("some list tags error")

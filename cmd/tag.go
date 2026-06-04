@@ -23,6 +23,7 @@ func init() {
 
 	tagCmd.Flags().BoolVarP(&list, "list", "l", false, "list tags in repositories with optional pattern")
 	tagCmd.Flags().BoolVarP(&del, "delete", "d", false, "delete tags in repositories")
+	tagCmd.Flags().BoolVar(&ignoreEmpty, "ignore-empty", false, "ignore repositories with no tags")
 	tagCmd.Flags().StringVarP(&message, "message", "m", "", "message for an annotated tag")
 	tagCmd.Flags().BoolVarP(&sign, "sign", "s", false, "create a GPG-signed tag (requires --message)")
 	tagCmd.Flags().BoolVar(&noSign, "no-sign", false, "do not GPG-sign the tag, overriding tag.gpgSign config")
@@ -83,7 +84,7 @@ func tagFunc(cmd *cobra.Command, args []string) error {
 	if list || len(args) == 0 {
 		args = append([]string{"--list"}, args...)
 
-		err = clt.ListTags(ctx, repoDirs, args...)
+		err = clt.ListTags(ctx, repoDirs, ignoreEmpty, args...)
 		if err != nil {
 			cmd.SilenceUsage = true
 			return fmt.Errorf("list tags: %w", err)

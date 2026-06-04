@@ -91,7 +91,7 @@ func (c *TestClient) Branches(ctx context.Context, repoDirs []string, args ...st
 	return c.Errors["Branches"]
 }
 
-func (c *TestClient) ListTags(ctx context.Context, repoDirs []string, args ...string) error {
+func (c *TestClient) ListTags(ctx context.Context, repoDirs []string, ignoreEmpty bool, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "ListTags")
 
 	return c.Errors["ListTags"]

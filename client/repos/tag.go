@@ -13,7 +13,7 @@ import (
 	"github.com/gosuri/uiprogress"
 )
 
-func (r *Repos) ListTags(ctx context.Context, dirs []string, args ...string) error {
+func (r *Repos) ListTags(ctx context.Context, dirs []string, ignoreEmpty bool, args ...string) error {
 	args = append([]string{"tag"}, args...)
 
 	verbose := ctxhelper.Verbose(ctx)
@@ -36,9 +36,14 @@ func (r *Repos) ListTags(ctx context.Context, dirs []string, args ...string) err
 		cmd.Stderr = errout
 		cmd.Dir = dir
 
+		err := cmd.Run()
+
+		if ignoreEmpty && out.Len() == 0 && err == nil {
+			continue
+		}
+
 		r.scrb.BeginDescribe(dir)
 
-		err := cmd.Run()
 		if err != nil {
 			r.scrb.Error(err)
 			r.scrb.PrintLines(errout)

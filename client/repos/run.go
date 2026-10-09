@@ -53,21 +53,26 @@ func (r *Repos) fanOut(ctx context.Context, dirs []string, label string, args []
 		cmd.Dir = dir
 
 		err := cmd.Run()
+		if err != nil {
+			detail := dir
+			stderr := strings.TrimSpace(errout.String())
+			if stderr != "" {
+				detail += ": " + stderr
+			}
+
+			errs = append(errs, fmt.Errorf("%s: %w", detail, err))
+		}
+
 		if verbose {
 			r.scrb.BeginDescribe(dir)
 			if err != nil {
 				r.scrb.Error(err)
-				r.scrb.PrintLines(errout)
-			} else {
-				r.scrb.PrintLines(out)
 			}
 
+			r.scrb.PrintLines(out)
+			r.scrb.PrintLines(errout)
 			r.scrb.EndDescribe()
 		} else {
-			if err != nil {
-				errs = append(errs, fmt.Errorf("%s: %w: %s", dir, err, strings.TrimSpace(errout.String())))
-			}
-
 			bar.Incr()
 		}
 	}

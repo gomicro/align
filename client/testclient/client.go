@@ -19,6 +19,13 @@ func New() *TestClient {
 	}
 }
 
+// RunAlias records dispatch and returns the configured test error.
+func (c *TestClient) RunAlias(ctx context.Context, dirs []string, name string, args ...string) error {
+	c.CommandsCalled = append(c.CommandsCalled, "RunAlias")
+
+	return c.Errors["RunAlias"]
+}
+
 func (c *TestClient) CheckoutRepos(ctx context.Context, repoDirs []string, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "CheckoutRepos")
 

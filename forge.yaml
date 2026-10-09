@@ -36,7 +36,7 @@ steps:
   test:
     help: Run all available tests
     steps:
-    - unit test
+    - unit_test
 
   unit_test:
     help: Run the unit tests

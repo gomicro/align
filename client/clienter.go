@@ -33,6 +33,7 @@ type Clienter interface {
 	Remove(ctx context.Context, dirs []string, name string) error
 	Rename(ctx context.Context, dirs []string, oldName, newName string) error
 	ResetRepos(ctx context.Context, repoDirs []string, args ...string) error
+	RunAlias(ctx context.Context, dirs []string, name string, args ...string) error
 	SetURLs(ctx context.Context, repoDirs []string, name, baseURL string) error
 	StageFiles(ctx context.Context, dirs []string, args ...string) error
 	StashRepos(ctx context.Context, dirs []string, args ...string) error

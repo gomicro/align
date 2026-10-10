@@ -32,7 +32,7 @@ func completionFunc(cmd *cobra.Command, args []string) {
 	var err error
 	switch strings.ToLower(shell) {
 	case "bash":
-		err = RootCmd.GenBashCompletion(os.Stdout)
+		err = RootCmd.GenBashCompletionV2(os.Stdout, true)
 	case "fish":
 		err = RootCmd.GenFishCompletion(os.Stdout, false)
 	case "ps", "powershell", "power_shell":

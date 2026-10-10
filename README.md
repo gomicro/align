@@ -26,6 +26,20 @@ align completion --shell <bash|zsh|fish|powershell>
 
 Completion is context-aware — it queries the repos in the target directory at completion time to suggest relevant branch names, tag names, and remote names rather than offering static completions.
 
+Global and system Git alias names are also completed dynamically. Regenerate your
+completion script after upgrading to pick up changes to completion support.
+
+# Git Aliases
+
+Align can fan out ordinary and shell Git aliases. Git expands each alias using
+the target repository's effective configuration; align discovers names only from
+global and system configuration. Built-in align commands take precedence.
+
+Aliases are user-controlled commands, not safety-checked operations. Shell
+portability, external programs, destructive effects, and output suitability are
+the user's responsibility. See the alias guidance in the tool's help for the
+argument boundary, output modes, and unsupported interactive behavior.
+
 # Versioning
 
 The tool will be versioned in accordance with [Semver 2.0.0](http://semver.org). See the [releases](https://github.com/gomicro/align/releases) section for the latest version. Until version 1.0.0 the tool is considered to be unstable.

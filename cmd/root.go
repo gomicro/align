@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -10,6 +11,7 @@ import (
 	"github.com/gomicro/align/cmd/remote"
 	"github.com/gomicro/align/cmd/stash"
 	"github.com/gomicro/align/config"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -53,7 +55,10 @@ Each sub-command mirrors its git equivalent and runs it against all repos found 
 
 Use --verbose (-v) when scripting or using align with AI tools. Verbose mode replaces the
 interactive progress bars with structured per-repo output written to stdout, which is easier
-to parse and redirect.`,
+to parse and redirect.
+
+` + aliasHelp,
+	TraverseChildren: true,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if _, err := exec.LookPath("git"); err != nil {
 			return fmt.Errorf("git is not installed or not on PATH — it is required for align to function")
@@ -62,12 +67,24 @@ to parse and redirect.`,
 	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the RootCmd.
-func Execute() {
-	if err := RootCmd.Execute(); err != nil {
-		os.Exit(1)
+// Execute registers aliases when needed and runs the command selected by os.Args.
+func Execute() error {
+	err := prepareAliases(context.Background(), RootCmd, os.Args[1:])
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		if isCompletionRequest(os.Args[1:]) {
+			fmt.Fprintf(os.Stdout, ":%d\n", cobra.ShellCompDirectiveError)
+		}
+
+		return fmt.Errorf("preparing command: %w", err)
 	}
+
+	err = RootCmd.Execute()
+	if err != nil {
+		return fmt.Errorf("executing command: %w", err)
+	}
+
+	return nil
 }
 
 func setupClient(cmd *cobra.Command, args []string) {

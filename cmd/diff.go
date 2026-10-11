@@ -6,6 +6,7 @@ import (
 
 	ctxhelper "github.com/gomicro/align/client/context"
 	"github.com/gomicro/align/client/repos"
+	"github.com/gomicro/align/cmd/selection"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -61,9 +62,10 @@ func diffCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) 
 
 	ctx := context.Background()
 
-	repoDirs, err := clt.GetDirs(ctx, ".")
+	repoDirs, err := selection.Dirs(ctx, cmd, clt, ".")
 	if err != nil {
-		return nil, cobra.ShellCompDirectiveNoFileComp
+		cobra.CompErrorln(err.Error())
+		return nil, cobra.ShellCompDirectiveError
 	}
 
 	names, err := clt.GetBranchAndTagNames(ctx, repoDirs)
@@ -79,7 +81,7 @@ func diffFunc(cmd *cobra.Command, args []string) error {
 	noColor := viper.GetBool("no-color")
 	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
 
-	repoDirs, err := clt.GetDirs(ctx, ".")
+	repoDirs, err := selection.Dirs(ctx, cmd, clt, ".")
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)

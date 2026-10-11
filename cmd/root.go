@@ -9,6 +9,7 @@ import (
 	"github.com/gomicro/align/client"
 	cfgCmd "github.com/gomicro/align/cmd/config"
 	"github.com/gomicro/align/cmd/remote"
+	"github.com/gomicro/align/cmd/selection"
 	"github.com/gomicro/align/cmd/stash"
 	"github.com/gomicro/align/config"
 
@@ -29,8 +30,14 @@ func init() {
 
 	RootCmd.PersistentFlags().BoolP("verbose", "v", false, "show more verbose output")
 	RootCmd.PersistentFlags().Bool("no-color", false, "disable color in verbose output")
+	RootCmd.PersistentFlags().StringArray("ignore-repo", nil, "exclude an exact local repository directory name (repeatable)")
+	err := RootCmd.RegisterFlagCompletionFunc("ignore-repo", selection.Complete)
+	if err != nil {
+		fmt.Printf("Error setting up: %s\n", err)
+		os.Exit(1)
+	}
 
-	err := viper.BindPFlag("verbose", RootCmd.PersistentFlags().Lookup("verbose"))
+	err = viper.BindPFlag("verbose", RootCmd.PersistentFlags().Lookup("verbose"))
 	if err != nil {
 		fmt.Printf("Error setting up: %s\n", err)
 		os.Exit(1)
@@ -57,15 +64,33 @@ Use --verbose (-v) when scripting or using align with AI tools. Verbose mode rep
 interactive progress bars with structured per-repo output written to stdout, which is easier
 to parse and redirect.
 
-` + aliasHelp,
+` + selectionHelp + "\n\n" + aliasHelp,
 	TraverseChildren: true,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		err := selection.Reject(cmd, args)
+		if err != nil {
+			return err
+		}
+
 		if _, err := exec.LookPath("git"); err != nil {
 			return fmt.Errorf("git is not installed or not on PATH — it is required for align to function")
 		}
+
 		return nil
 	},
 }
+
+const selectionHelp = `Exclude local repositories for this invocation with --ignore-repo:
+  align checkout main --ignore-repo userauth
+  align --ignore-repo userauth --ignore-repo other cleanup
+
+Repeat the option for multiple exact, case-sensitive directory names. Paths and
+wildcard patterns are not interpreted; commas are part of a name. Unknown names
+and exclusions that leave no repositories selected fail before Git execution.
+For aliases, put this option BEFORE the alias name; subsequent tokens belong to
+Git. Ignored repos do not contribute output or progress totals. Nothing is saved.
+This option is unsupported for clone, auth, config, version, and completion
+generation.`
 
 // Execute registers aliases when needed and runs the command selected by os.Args.
 func Execute() error {

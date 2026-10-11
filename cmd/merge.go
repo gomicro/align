@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	ctxhelper "github.com/gomicro/align/client/context"
+	"github.com/gomicro/align/cmd/selection"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -53,9 +54,10 @@ func mergeCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string)
 
 	ctx := context.Background()
 
-	repoDirs, err := clt.GetDirs(ctx, ".")
+	repoDirs, err := selection.Dirs(ctx, cmd, clt, ".")
 	if err != nil {
-		return nil, cobra.ShellCompDirectiveNoFileComp
+		cobra.CompErrorln(err.Error())
+		return nil, cobra.ShellCompDirectiveError
 	}
 
 	names, err := clt.GetBranchNames(ctx, repoDirs)
@@ -75,7 +77,7 @@ func mergeFunc(cmd *cobra.Command, args []string) error {
 		defer uiprogress.Stop()
 	}
 
-	repoDirs, err := clt.GetDirs(ctx, ".")
+	repoDirs, err := selection.Dirs(ctx, cmd, clt, ".")
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)

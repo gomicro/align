@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	ctxhelper "github.com/gomicro/align/client/context"
+	"github.com/gomicro/align/cmd/selection"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +24,7 @@ func listFunc(cmd *cobra.Command, args []string) error {
 	// list output is always verbose — force it so scribe prints each repo's output
 	ctx := ctxhelper.WithVerbose(context.Background(), true)
 
-	repoDirs, err := clt.GetDirs(ctx, ".")
+	repoDirs, err := selection.Dirs(ctx, cmd, clt, ".")
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get dirs: %w", err)

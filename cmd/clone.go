@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	ctxhelper "github.com/gomicro/align/client/context"
+	"github.com/gomicro/align/cmd/selection"
 	"github.com/google/go-github/github"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
@@ -34,8 +35,18 @@ When --exclude-topics is provided, repos that have ANY of the specified topics a
 Both flags may be combined: clone repos with topic A but not topic B.`,
 	Args:              cobra.MaximumNArgs(2),
 	ValidArgsFunction: createCmdValidArgsFunc,
-	PersistentPreRun:  setupClient,
+	PersistentPreRunE: setupCloneClient,
 	RunE:              cloneFunc,
+}
+
+func setupCloneClient(cmd *cobra.Command, args []string) error {
+	err := selection.Reject(cmd, args)
+	if err != nil {
+		return fmt.Errorf("validating clone selection: %w", err)
+	}
+
+	setupClient(cmd, args)
+	return nil
 }
 
 func cloneFunc(cmd *cobra.Command, args []string) error {

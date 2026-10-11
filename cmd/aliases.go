@@ -6,6 +6,7 @@ import (
 
 	"github.com/gomicro/align/client"
 	ctxhelper "github.com/gomicro/align/client/context"
+	"github.com/gomicro/align/cmd/selection"
 
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
@@ -18,7 +19,7 @@ Use align [align flags] <alias> [alias arguments], for example:
   align -v lg1
   align -v <alias> --help
 
-Put align options (-v, --verbose, --no-color) BEFORE the alias name.
+Put align options (-v, --verbose, --no-color, --ignore-repo) BEFORE the alias name.
 All arguments after the name go unchanged to Git. To view align's help for an
 alias, use align help <alias>; <alias> --help is passed to Git.
 Built-in align commands always take precedence over aliases.
@@ -115,7 +116,7 @@ func newAliasCommand(root *cobra.Command, name string) *cobra.Command {
 	}
 
 	// Cobra completes inherited flags even when flag parsing is disabled.
-	for _, name := range []string{"verbose", "no-color"} {
+	for _, name := range []string{"verbose", "no-color", "ignore-repo"} {
 		flag := root.PersistentFlags().Lookup(name)
 		if flag == nil {
 			continue
@@ -142,7 +143,7 @@ func aliasFunc(cmd *cobra.Command, args []string) error {
 	}
 
 	ctx := ctxhelper.WithVerbose(cmd.Context(), verbose)
-	dirs, err := clt.GetDirs(ctx, ".")
+	dirs, err := selection.Dirs(ctx, cmd, clt, ".")
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("discovering repositories: %w", err)

@@ -8,19 +8,12 @@ steps:
       CGO_ENABLED: 0
       GOOS: '{{.Os}}'
     cmd: >
-      go build -ldflags
-      "-X 'github.com/gomicro/align/cmd.Version=dev-{{.ShortSha}}'
-      -X 'github.com/gomicro/align/cmd.clientID=$ALIGN_CLIENT_ID'
-      -X 'github.com/gomicro/align/cmd.clientSecret=$ALIGN_CLIENT_SECRET'"
-      -o {{.Project}} .
+      go build -ldflags "-X 'github.com/gomicro/align/cmd.Version=dev-{{.ShortSha}}' -X 'github.com/gomicro/align/cmd.clientID=$ALIGN_CLIENT_ID' -X 'github.com/gomicro/align/cmd.clientSecret=$ALIGN_CLIENT_SECRET'" -o {{.Project}} .
+
 
   clean:
     help: Clean up all generated files
     cmd: go clean
-
-  lint:
-    help: Run golangci-lint
-    cmd: golangci-lint run
 
   install:
     help: Install the binary
@@ -28,15 +21,17 @@ steps:
       CGO_ENABLED: 0
       GOOS: '{{.Os}}'
     cmd: >
-      go install -ldflags
-      "-X 'github.com/gomicro/align/cmd.Version=dev-$(git rev-parse --short HEAD)'
-      -X 'github.com/gomicro/align/cmd.clientID=$ALIGN_CLIENT_ID'
-      -X 'github.com/gomicro/align/cmd.clientSecret=$ALIGN_CLIENT_SECRET'"
+      go install -ldflags "-X 'github.com/gomicro/align/cmd.Version=dev-$(git rev-parse --short HEAD)' -X 'github.com/gomicro/align/cmd.clientID=$ALIGN_CLIENT_ID' -X 'github.com/gomicro/align/cmd.clientSecret=$ALIGN_CLIENT_SECRET'"
+
+
+  lint:
+    help: Run golangci-lint
+    cmd: golangci-lint run
 
   test:
     help: Run all available tests
     steps:
-    - unit_test
+      - unit_test
 
   unit_test:
     help: Run the unit tests

@@ -5,12 +5,19 @@ import (
 
 	clientctx "github.com/gomicro/align/client/context"
 	"github.com/gomicro/align/client/repos"
+
 	"github.com/google/go-github/github"
 )
 
 type TestClient struct {
 	CommandsCalled []string
 	Errors         map[string]error
+	// CheckoutContext and CheckoutArgs capture the most recent checkout request.
+	CheckoutContext context.Context
+	CheckoutArgs    []string
+	// PullContext and PullArgs capture the most recent pull request.
+	PullContext context.Context
+	PullArgs    []string
 }
 
 func New() *TestClient {
@@ -28,6 +35,8 @@ func (c *TestClient) RunAlias(ctx context.Context, dirs []string, name string, a
 
 func (c *TestClient) CheckoutRepos(ctx context.Context, repoDirs []string, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "CheckoutRepos")
+	c.CheckoutContext = ctx
+	c.CheckoutArgs = append([]string(nil), args...)
 
 	return c.Errors["CheckoutRepos"]
 }
@@ -112,6 +121,8 @@ func (c *TestClient) MergeRepos(ctx context.Context, repoDirs []string, args ...
 
 func (c *TestClient) PullRepos(ctx context.Context, repoDirs []string, args ...string) error {
 	c.CommandsCalled = append(c.CommandsCalled, "PullRepos")
+	c.PullContext = ctx
+	c.PullArgs = append([]string(nil), args...)
 
 	return c.Errors["PullRepos"]
 }

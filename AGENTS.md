@@ -48,6 +48,7 @@ client/              Business logic layer called by cmd/
   context/           Request-scoped state (verbose flag, repo map, excludes)
   repos/             Per-repo git operations (fanOut pattern)
     run.go           fanOut(ctx, dirs, label, args) — shared exec loop
+    concurrent.go    Bounded rolling worker pool for checkout and pull
     clone.go         CloneRepos: uses go-git, not exec
     status.go        StatusRepos: filters empty output, always verbose
     diff.go          DiffRepos: DiffConfig for filtering
@@ -61,8 +62,15 @@ vendor/              Vendored deps — never edit directly
 ## Architecture Notes
 
 - **`fanOut` is the core pattern.** Every standard git operation assembles
-  `args []string` and calls `repos.fanOut(ctx, dirs, label, args)`. It never
-  aborts on first failure — all repos are attempted and errors are joined.
+  `args []string` and uses a shared executor. Checkout and pull use
+  `fanOutConcurrent`; other operations and Git aliases use sequential `fanOut`.
+  Repository failures do not abort execution — errors are joined after all
+  attempts, unless the operation is canceled.
+- **Concurrency:** checkout and pull define their default limits in `repos`.
+  Their invocation-scoped override uses `ctxhelper.WithConcurrency` /
+  `ctxhelper.Concurrency`. Workers own Git buffers; only the coordinator writes
+  scribe output and advances progress. Checkout/pull derive a signal-aware
+  context from Cobra, stop queued work on cancellation, and join their workers.
 - **Non-verbose vs verbose:** non-verbose writes a `uiprogress` bar to stdout
   (not pipeable); verbose uses `scribe` for structured per-repo output. Always
   pass `--verbose` / `-v` when running non-interactively or in scripts.
@@ -88,7 +96,8 @@ vendor/              Vendored deps — never edit directly
 - **No callbacks:** prefer explicit data (e.g., `[][]string`) over function
   arguments passed as callbacks.
 - **No nested control structures:** use early returns and guard clauses.
-- **Sequential by default:** no goroutines unless there is a demonstrated need.
+- **Sequential by default:** only checkout/pull opt into managed worker pools;
+  no goroutines in other operations unless there is a demonstrated need.
 - **Vendor is read-only:** modify only via `go mod vendor`.
 - **After any Go change:** run `go fmt`, `go vet`, `go build ./...`,
   `go test ./...` in that order before committing.

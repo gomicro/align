@@ -94,6 +94,7 @@ func TestIgnoreCheckout(t *testing.T) {
 		{name: "before command", args: []string{"--ignore-repo", "userauth", "checkout", "target"}},
 		{name: "equals verbose", args: []string{"-v", "checkout", "target", "--ignore-repo=userauth"}},
 		{name: "duplicates", args: []string{"checkout", "target", "--ignore-repo", "userauth", "--ignore-repo", "userauth"}},
+		{name: "concurrency override", args: []string{"checkout", "target", "--concurrency=2", "--ignore-repo", "userauth"}},
 	}
 
 	for _, tc := range cases {

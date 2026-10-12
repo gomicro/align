@@ -5,7 +5,9 @@ import (
 	"fmt"
 
 	ctxhelper "github.com/gomicro/align/client/context"
+	"github.com/gomicro/align/client/repos"
 	"github.com/gomicro/align/cmd/selection"
+
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -13,12 +15,13 @@ import (
 
 func init() {
 	RootCmd.AddCommand(checkoutCmd)
+	checkoutCmd.Flags().Int("concurrency", repos.DefaultCheckoutConcurrency, "maximum simultaneous Git checkouts (1 runs sequentially)")
 }
 
 var checkoutCmd = &cobra.Command{
 	Use:               "checkout [branch]",
 	Short:             "Checkout a branch across all repos in a directory",
-	Long:              `Switch to the specified branch across all repos in a directory.`,
+	Long:              `Switch to the specified branch across all repos in a directory.` + concurrencyHelp,
 	Args:              cobra.RangeArgs(1, 2),
 	ValidArgsFunction: checkoutCmdValidArgsFunc,
 	PersistentPreRun:  setupClient,
@@ -51,8 +54,16 @@ func checkoutCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete stri
 }
 
 func checkoutFunc(cmd *cobra.Command, args []string) error {
+	ctx, stop, err := concurrencyContext(cmd)
+	if err != nil {
+		cmd.SilenceUsage = true
+		return fmt.Errorf("checkout options: %w", err)
+	}
+
+	defer stop()
+
 	verbose := viper.GetBool("verbose")
-	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
+	ctx = ctxhelper.WithVerbose(ctx, verbose)
 
 	if !verbose {
 		uiprogress.Start()

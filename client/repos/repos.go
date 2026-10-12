@@ -1,8 +1,8 @@
 // Package repos implements git operations fanned out across multiple repository directories.
 //
-// The simple fan-out methods (CheckoutRepos, CommitRepos, FetchRepos, MergeRepos, PullRepos,
-// PushRepos, ResetRepos, StageFiles, StashRepos) each prepend their git sub-command and
-// delegate to fanOut. They carry no individual doc comments.
+// The simple fan-out methods each prepend their git sub-command and delegate to
+// a shared executor. CheckoutRepos and PullRepos use bounded rolling worker pools;
+// other operations run sequentially. They carry no individual doc comments.
 package repos
 
 import (

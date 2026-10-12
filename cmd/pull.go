@@ -1,11 +1,12 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 
 	ctxhelper "github.com/gomicro/align/client/context"
+	"github.com/gomicro/align/client/repos"
 	"github.com/gomicro/align/cmd/selection"
+
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -18,6 +19,7 @@ var (
 func init() {
 	RootCmd.AddCommand(pullCmd)
 
+	pullCmd.Flags().Int("concurrency", repos.DefaultPullConcurrency, "maximum simultaneous Git pulls (1 runs sequentially)")
 	pullCmd.Flags().BoolVar(&tags, "tags", false, "pull tags")
 	pullCmd.Flags().BoolVar(&prune, "prune", false, "remove stale remote-tracking refs after pulling")
 	pullCmd.Flags().BoolVar(&ffOnly, "ff-only", false, "refuse to pull unless the result is a fast-forward")
@@ -26,14 +28,22 @@ func init() {
 var pullCmd = &cobra.Command{
 	Use:              "pull [<remote> [<branch>]]",
 	Short:            "Pull all repos in a directory",
-	Long:             `Fetch and integrate remote changes across all repos in a directory.`,
+	Long:             `Fetch and integrate remote changes across all repos in a directory.` + concurrencyHelp,
 	PersistentPreRun: setupClient,
 	RunE:             pullFunc,
 }
 
 func pullFunc(cmd *cobra.Command, args []string) error {
+	ctx, stop, err := concurrencyContext(cmd)
+	if err != nil {
+		cmd.SilenceUsage = true
+		return fmt.Errorf("pull options: %w", err)
+	}
+
+	defer stop()
+
 	verbose := viper.GetBool("verbose")
-	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
+	ctx = ctxhelper.WithVerbose(ctx, verbose)
 
 	if !verbose {
 		uiprogress.Start()

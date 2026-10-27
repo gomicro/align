@@ -8,7 +8,7 @@ import (
 )
 
 // DefaultPullConcurrency bounds simultaneous pulls when no override is set.
-const DefaultPullConcurrency = 5
+const DefaultPullConcurrency = 25
 
 func (r *Repos) PullRepos(ctx context.Context, dirs []string, args ...string) error {
 	limit, err := ctxhelper.Concurrency(ctx, DefaultPullConcurrency)

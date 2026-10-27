@@ -354,13 +354,14 @@ func TestConcurrentLimits(t *testing.T) {
 		count    int
 		want     int
 	}{
-		{name: "checkout default", op: "checkout", count: 52, want: 50},
-		{name: "pull default", op: "pull", count: 7, want: 5},
-		{name: "explicit pool", op: "pull", limit: 2, override: true, count: 4, want: 2},
+		{name: "checkout default", op: "checkout", count: DefaultCheckoutConcurrency + 2, want: DefaultCheckoutConcurrency},
+		{name: "pull default", op: "pull", count: DefaultPullConcurrency + 2, want: DefaultPullConcurrency},
+		{name: "explicit checkout pool", op: "checkout", limit: 2, override: true, count: 4, want: 2},
+		{name: "explicit pull pool", op: "pull", limit: 2, override: true, count: 4, want: 2},
 		{name: "sequential checkout", op: "checkout", limit: 1, override: true, count: 3, want: 1},
 		{name: "sequential pull", op: "pull", limit: 1, override: true, count: 3, want: 1},
-		{name: "above checkout default", op: "checkout", limit: 100, override: true, count: 3, want: 3},
-		{name: "above pull default", op: "pull", limit: 6, override: true, count: 7, want: 6},
+		{name: "above checkout default", op: "checkout", limit: DefaultCheckoutConcurrency + 1, override: true, count: 3, want: min(3, DefaultCheckoutConcurrency+1)},
+		{name: "above pull default", op: "pull", limit: DefaultPullConcurrency + 1, override: true, count: 3, want: min(3, DefaultPullConcurrency+1)},
 		{name: "alias stays sequential", op: "alias", limit: 10, override: true, count: 3, want: 1},
 	}
 	for _, tc := range cases {

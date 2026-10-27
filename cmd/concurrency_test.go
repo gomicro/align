@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -152,11 +153,12 @@ func TestConcurrencyFlags(t *testing.T) {
 		limit int
 		git   []string
 	}{
-		{name: "checkout default", args: []string{"-v", "checkout", "target"}, op: "CheckoutRepos", limit: 50, git: []string{"target"}},
-		{name: "pull default", args: []string{"-v", "pull"}, op: "PullRepos", limit: 5},
+		{name: "checkout default", args: []string{"-v", "checkout", "target"}, op: "CheckoutRepos", limit: repos.DefaultCheckoutConcurrency, git: []string{"target"}},
+		{name: "pull default", args: []string{"-v", "pull"}, op: "PullRepos", limit: repos.DefaultPullConcurrency},
 		{name: "checkout sequential", args: []string{"-v", "checkout", "--concurrency=1", "target"}, op: "CheckoutRepos", limit: 1, git: []string{"target"}},
 		{name: "pull override and git flags", args: []string{"-v", "pull", "--concurrency", "7", "origin", "main", "--ff-only", "--prune", "--tags"}, op: "PullRepos", limit: 7, git: []string{"origin", "main", "--tags", "--ff-only", "--prune"}},
-		{name: "checkout above default", args: []string{"-v", "checkout", "target", "--concurrency", "100"}, op: "CheckoutRepos", limit: 100, git: []string{"target"}},
+		{name: "checkout above default", args: []string{"-v", "checkout", "target", "--concurrency", strconv.Itoa(repos.DefaultCheckoutConcurrency + 1)}, op: "CheckoutRepos", limit: repos.DefaultCheckoutConcurrency + 1, git: []string{"target"}},
+		{name: "pull above default", args: []string{"-v", "pull", "--concurrency", strconv.Itoa(repos.DefaultPullConcurrency + 1)}, op: "PullRepos", limit: repos.DefaultPullConcurrency + 1},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

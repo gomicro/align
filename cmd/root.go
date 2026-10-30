@@ -64,12 +64,18 @@ Use --verbose (-v) when scripting or using align with AI tools. Verbose mode rep
 interactive progress bars with structured per-repo output written to stdout, which is easier
 to parse and redirect.
 
+Export portable agent guidance with 'align skills dump'; see its help for details.
+
 ` + selectionHelp + "\n\n" + aliasHelp,
 	TraverseChildren: true,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		err := selection.Reject(cmd, args)
 		if err != nil {
 			return err
+		}
+
+		if cmd.Name() == "help" && len(args) > 0 && args[0] == "skills" {
+			return nil
 		}
 
 		if _, err := exec.LookPath("git"); err != nil {
@@ -89,7 +95,7 @@ wildcard patterns are not interpreted; commas are part of a name. Unknown names
 and exclusions that leave no repositories selected fail before Git execution.
 For aliases, put this option BEFORE the alias name; subsequent tokens belong to
 Git. Ignored repos do not contribute output or progress totals. Nothing is saved.
-This option is unsupported for clone, auth, config, version, and completion
+This option is unsupported for clone, auth, config, version, skills, and completion
 generation.`
 
 // Execute registers aliases when needed and runs the command selected by os.Args.

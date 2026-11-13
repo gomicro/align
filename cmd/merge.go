@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	ctxhelper "github.com/gomicro/align/client/context"
+	"github.com/gomicro/align/client/repos"
+	"github.com/gomicro/align/cmd/concurrency"
 	"github.com/gomicro/align/cmd/selection"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
@@ -21,6 +23,7 @@ var (
 
 func init() {
 	RootCmd.AddCommand(mergeCmd)
+	concurrency.AddFlag(mergeCmd, repos.DefaultLocalConcurrency)
 
 	mergeCmd.Flags().BoolVar(&noFF, "no-ff", false, "create a merge commit even when fast-forward is possible")
 	mergeCmd.Flags().BoolVar(&ffOnly, "ff-only", false, "refuse to merge unless the result is a fast-forward")
@@ -38,7 +41,7 @@ func init() {
 var mergeCmd = &cobra.Command{
 	Use:               "merge [branch]",
 	Short:             "Merge a branch into the current branch across all repos",
-	Long:              `Merge a branch into the current branch across all repos in a directory.`,
+	Long:              `Merge a branch into the current branch across all repos in a directory.` + concurrency.Help,
 	Args:              cobra.MaximumNArgs(1),
 	ValidArgsFunction: mergeCmdValidArgsFunc,
 	PersistentPreRun:  setupClient,
@@ -69,8 +72,16 @@ func mergeCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string)
 }
 
 func mergeFunc(cmd *cobra.Command, args []string) error {
+	ctx, stop, err := concurrency.Context(cmd)
+	if err != nil {
+		cmd.SilenceUsage = true
+		return fmt.Errorf("merge options: %w", err)
+	}
+
+	defer stop()
+
 	verbose := viper.GetBool("verbose")
-	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
+	ctx = ctxhelper.WithVerbose(ctx, verbose)
 
 	if !verbose {
 		uiprogress.Start()

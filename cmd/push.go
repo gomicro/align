@@ -6,6 +6,8 @@ import (
 	"slices"
 
 	ctxhelper "github.com/gomicro/align/client/context"
+	"github.com/gomicro/align/client/repos"
+	"github.com/gomicro/align/cmd/concurrency"
 	"github.com/gomicro/align/cmd/selection"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
@@ -21,6 +23,7 @@ var (
 
 func init() {
 	RootCmd.AddCommand(pushCmd)
+	concurrency.AddFlag(pushCmd, repos.DefaultPushConcurrency)
 
 	pushCmd.Flags().BoolVar(&all, "all", false, "all branches")
 	pushCmd.Flags().BoolVar(&force, "force", false, "force push")
@@ -32,7 +35,7 @@ func init() {
 var pushCmd = &cobra.Command{
 	Use:               "push [<remote>] [<branch|tag>]",
 	Short:             "Push all repos in a directory",
-	Long:              `Push local commits to the remote across all repos in a directory.`,
+	Long:              `Push local commits to the remote across all repos in a directory.` + concurrency.Help,
 	ValidArgsFunction: pushCmdValidArgsFunc,
 	PersistentPreRun:  setupClient,
 	RunE:              pushFunc,
@@ -71,8 +74,16 @@ func pushCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) 
 }
 
 func pushFunc(cmd *cobra.Command, args []string) error {
+	ctx, stop, err := concurrency.Context(cmd)
+	if err != nil {
+		cmd.SilenceUsage = true
+		return fmt.Errorf("push options: %w", err)
+	}
+
+	defer stop()
+
 	verbose := viper.GetBool("verbose")
-	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
+	ctx = ctxhelper.WithVerbose(ctx, verbose)
 
 	if !verbose {
 		uiprogress.Start()

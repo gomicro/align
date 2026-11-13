@@ -1,4 +1,5 @@
-package cmd
+// Package concurrency connects the --concurrency flag to the worker pool limit.
+package concurrency
 
 import (
 	"context"
@@ -11,7 +12,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const concurrencyHelp = `
+// Help is appended to the long description of commands that accept --concurrency.
+const Help = `
 
 Repositories run in a rolling worker pool: each completed Git call frees a slot
 for the next repository. --concurrency sets the maximum number of active calls
@@ -23,7 +25,14 @@ order. Normal progress shows completed/total attempts. Repository failures do no
 stop other repositories; any failure returns a nonzero exit status. Ctrl-C cancels
 active Git calls and stops queued work. Interactive Git input is not supported.`
 
-func concurrencyContext(cmd *cobra.Command) (context.Context, context.CancelFunc, error) {
+// AddFlag registers --concurrency on cmd with fallback as its default.
+func AddFlag(cmd *cobra.Command, fallback int) {
+	cmd.Flags().Int("concurrency", fallback, "maximum simultaneous Git calls (1 runs sequentially)")
+}
+
+// Context returns a context canceled on interrupt that carries the parsed
+// --concurrency limit. Callers must call the returned stop function.
+func Context(cmd *cobra.Command) (context.Context, context.CancelFunc, error) {
 	limit, err := cmd.Flags().GetInt("concurrency")
 	if err != nil {
 		return nil, nil, fmt.Errorf("reading concurrency: %w", err)

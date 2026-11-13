@@ -5,6 +5,7 @@ import (
 
 	ctxhelper "github.com/gomicro/align/client/context"
 	"github.com/gomicro/align/client/repos"
+	"github.com/gomicro/align/cmd/concurrency"
 	"github.com/gomicro/align/cmd/selection"
 
 	"github.com/gosuri/uiprogress"
@@ -19,7 +20,7 @@ var (
 func init() {
 	RootCmd.AddCommand(pullCmd)
 
-	pullCmd.Flags().Int("concurrency", repos.DefaultPullConcurrency, "maximum simultaneous Git pulls (1 runs sequentially)")
+	concurrency.AddFlag(pullCmd, repos.DefaultPullConcurrency)
 	pullCmd.Flags().BoolVar(&tags, "tags", false, "pull tags")
 	pullCmd.Flags().BoolVar(&prune, "prune", false, "remove stale remote-tracking refs after pulling")
 	pullCmd.Flags().BoolVar(&ffOnly, "ff-only", false, "refuse to pull unless the result is a fast-forward")
@@ -28,13 +29,13 @@ func init() {
 var pullCmd = &cobra.Command{
 	Use:              "pull [<remote> [<branch>]]",
 	Short:            "Pull all repos in a directory",
-	Long:             `Fetch and integrate remote changes across all repos in a directory.` + concurrencyHelp,
+	Long:             `Fetch and integrate remote changes across all repos in a directory.` + concurrency.Help,
 	PersistentPreRun: setupClient,
 	RunE:             pullFunc,
 }
 
 func pullFunc(cmd *cobra.Command, args []string) error {
-	ctx, stop, err := concurrencyContext(cmd)
+	ctx, stop, err := concurrency.Context(cmd)
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("pull options: %w", err)

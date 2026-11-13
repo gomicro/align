@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	ctxhelper "github.com/gomicro/align/client/context"
+	"github.com/gomicro/align/client/repos"
+	"github.com/gomicro/align/cmd/concurrency"
 	"github.com/gomicro/align/cmd/selection"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
@@ -20,6 +22,7 @@ var (
 
 func init() {
 	RootCmd.AddCommand(branchCmd)
+	concurrency.AddFlag(branchCmd, repos.DefaultLocalConcurrency)
 
 	branchCmd.Flags().BoolVarP(&all, "all", "a", false, "list all branches")
 	branchCmd.Flags().BoolVarP(&del, "delete", "d", false, "delete the branch from the repos")
@@ -34,7 +37,7 @@ func init() {
 var branchCmd = &cobra.Command{
 	Use:               "branch [<branchname>]",
 	Short:             "Manage branches across all repos in a directory",
-	Long:              `List, create, delete, move, or show the current branch across all repos in a directory.`,
+	Long:              `List, create, delete, move, or show the current branch across all repos in a directory.` + concurrency.Help,
 	Args:              cobra.MaximumNArgs(2),
 	ValidArgsFunction: branchCmdValidArgsFunc,
 	PersistentPreRun:  setupClient,
@@ -79,8 +82,16 @@ func branchCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string
 }
 
 func branchFunc(cmd *cobra.Command, args []string) error {
+	ctx, stop, err := concurrency.Context(cmd)
+	if err != nil {
+		cmd.SilenceUsage = true
+		return fmt.Errorf("branch options: %w", err)
+	}
+
+	defer stop()
+
 	verbose := viper.GetBool("verbose")
-	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
+	ctx = ctxhelper.WithVerbose(ctx, verbose)
 
 	repoDirs, err := selection.Dirs(ctx, cmd, clt, ".")
 	if err != nil {

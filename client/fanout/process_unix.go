@@ -1,6 +1,6 @@
 //go:build unix
 
-package repos
+package fanout
 
 import (
 	"errors"

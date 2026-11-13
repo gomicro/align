@@ -1,6 +1,6 @@
 //go:build !unix && !windows
 
-package repos
+package fanout
 
 import "os/exec"
 

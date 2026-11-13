@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	ctxhelper "github.com/gomicro/align/client/context"
+	"github.com/gomicro/align/client/repos"
+	"github.com/gomicro/align/cmd/concurrency"
 	"github.com/gomicro/align/cmd/selection"
 	"github.com/google/go-github/github"
 	"github.com/gosuri/uiprogress"
@@ -19,6 +21,7 @@ var (
 
 func init() {
 	RootCmd.AddCommand(cloneCmd)
+	concurrency.AddFlag(cloneCmd, repos.DefaultCloneConcurrency)
 
 	cloneCmd.Flags().StringSliceVarP(&topics, "topics", "t", []string{}, "clone only repos with matching topics")
 	cloneCmd.Flags().StringSliceVarP(&excludeTopics, "exclude-topics", "e", []string{}, "skip repos that have any of the specified topics")
@@ -32,7 +35,7 @@ The optional directory argument specifies where to clone the repos (defaults to 
 
 When --topics is provided, only repos that have ALL specified topics are cloned (AND logic).
 When --exclude-topics is provided, repos that have ANY of the specified topics are skipped.
-Both flags may be combined: clone repos with topic A but not topic B.`,
+Both flags may be combined: clone repos with topic A but not topic B.` + concurrency.Help,
 	Args:              cobra.MaximumNArgs(2),
 	ValidArgsFunction: createCmdValidArgsFunc,
 	PersistentPreRunE: setupCloneClient,
@@ -50,8 +53,16 @@ func setupCloneClient(cmd *cobra.Command, args []string) error {
 }
 
 func cloneFunc(cmd *cobra.Command, args []string) error {
+	ctx, stop, err := concurrency.Context(cmd)
+	if err != nil {
+		cmd.SilenceUsage = true
+		return fmt.Errorf("clone options: %w", err)
+	}
+
+	defer stop()
+
 	verbose := viper.GetBool("verbose")
-	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
+	ctx = ctxhelper.WithVerbose(ctx, verbose)
 
 	if !verbose {
 		uiprogress.Start()
@@ -68,16 +79,16 @@ func cloneFunc(cmd *cobra.Command, args []string) error {
 		destDir = args[1]
 	}
 
-	repos, err := clt.GetRepos(ctx, name)
+	ghRepos, err := clt.GetRepos(ctx, name)
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("get repos: %w", err)
 	}
 
-	repos = filterByTopics(repos, topics)
-	repos = excludeByTopics(repos, excludeTopics)
+	ghRepos = filterByTopics(ghRepos, topics)
+	ghRepos = excludeByTopics(ghRepos, excludeTopics)
 
-	ctx = ctxhelper.WithRepos(ctx, repos)
+	ctx = ctxhelper.WithRepos(ctx, ghRepos)
 
 	_, err = clt.CloneRepos(ctx, destDir)
 	if err != nil {

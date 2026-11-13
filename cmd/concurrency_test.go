@@ -82,8 +82,7 @@ func TestConcurrencyCLIProcess(t *testing.T) {
 	}
 
 	// Client construction is unrelated to flag/context wiring.
-	checkoutCmd.PersistentPreRun = nil
-	pullCmd.PersistentPreRun = nil
+	disableClientSetup(RootCmd)
 	RootCmd.SetContext(context.WithValue(context.Background(), concurrencyTestKey{}, true))
 	os.Args = append([]string{os.Args[0]}, os.Args[index+1:]...)
 	err := Execute()
@@ -119,6 +118,14 @@ func TestConcurrencyCLIProcess(t *testing.T) {
 	}
 
 	os.Exit(0)
+}
+
+func disableClientSetup(command *cobra.Command) {
+	command.PersistentPreRun = nil
+	command.PersistentPreRunE = nil
+	for _, child := range command.Commands() {
+		disableClientSetup(child)
+	}
 }
 
 func concurrencyCLI(t *testing.T, mode string, args ...string) *exec.Cmd {
@@ -195,9 +202,38 @@ func TestConcurrencyInvalidFlags(t *testing.T) {
 			})
 		}
 	}
-	t.Run("not inherited by fetch", func(t *testing.T) {
+	commands := [][]string{
+		{"clone", "org"},
+		{"fetch"},
+		{"push"},
+		{"commit", "-m", "message"},
+		{"merge", "main"},
+		{"reset", "--hard"},
+		{"add"},
+		{"branch"},
+		{"stash"},
+		{"stash", "pop"},
+		{"stash", "drop"},
+		{"stash", "list"},
+		{"remote", "add", "origin", "url"},
+		{"remote", "remove", "origin"},
+		{"remote", "rename", "old", "new"},
+		{"remote", "set-url", "origin", "url"},
+	}
+	for _, args := range commands {
+		t.Run(strings.Join(args, " "), func(t *testing.T) {
+			t.Parallel()
+			args = append([]string{"-v"}, args...)
+			out, err := concurrencyCLI(t, "capture", append(args, "--concurrency=0")...).CombinedOutput()
+			assert.Error(t, err)
+			assert.Contains(t, string(out), "--concurrency must be a positive integer")
+			record := readConcurrencyRecord(t, string(out))
+			assert.Empty(t, record.Calls)
+		})
+	}
+	t.Run("not inherited by status", func(t *testing.T) {
 		t.Parallel()
-		out, err := concurrencyCLI(t, "capture", "fetch", "--concurrency=2").CombinedOutput()
+		out, err := concurrencyCLI(t, "capture", "status", "--concurrency=2").CombinedOutput()
 		assert.Error(t, err)
 		assert.Contains(t, string(out), "unknown flag: --concurrency")
 		record := readConcurrencyRecord(t, string(out))
@@ -260,10 +296,7 @@ func TestConcurrencyRealCLIProcess(t *testing.T) {
 	}
 
 	clt = &client.Client{Repos: repos.New(scrb, nil, nil)}
-	for _, command := range []*cobra.Command{checkoutCmd, pullCmd} {
-		command.PersistentPreRun = nil
-		command.PersistentPreRunE = func(cmd *cobra.Command, args []string) error { return nil }
-	}
+	disableClientSetup(RootCmd)
 
 	os.Args = append([]string{os.Args[0]}, os.Args[index+1:]...)
 	err = Execute()

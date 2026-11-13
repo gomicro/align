@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	ctxhelper "github.com/gomicro/align/client/context"
+	"github.com/gomicro/align/client/repos"
+	"github.com/gomicro/align/cmd/concurrency"
 	"github.com/gomicro/align/cmd/selection"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
@@ -19,6 +21,7 @@ var (
 
 func init() {
 	RootCmd.AddCommand(resetCmd)
+	concurrency.AddFlag(resetCmd, repos.DefaultLocalConcurrency)
 
 	resetCmd.Flags().BoolVar(&hard, "hard", false, "reset index and working tree, discarding all uncommitted changes")
 	resetCmd.Flags().BoolVar(&soft, "soft", false, "reset HEAD only, keeping all changes staged")
@@ -30,7 +33,7 @@ func init() {
 var resetCmd = &cobra.Command{
 	Use:               "reset [ref]",
 	Short:             "Reset the current branch across all repos",
-	Long:              `Reset the current branch across all repos in a directory. One of --hard, --soft, or --mixed must be provided.`,
+	Long:              `Reset the current branch across all repos in a directory. One of --hard, --soft, or --mixed must be provided.` + concurrency.Help,
 	Args:              cobra.MaximumNArgs(1),
 	ValidArgsFunction: resetCmdValidArgsFunc,
 	PersistentPreRun:  setupClient,
@@ -65,8 +68,16 @@ func resetFunc(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("one of --hard, --soft, or --mixed is required")
 	}
 
+	ctx, stop, err := concurrency.Context(cmd)
+	if err != nil {
+		cmd.SilenceUsage = true
+		return fmt.Errorf("reset options: %w", err)
+	}
+
+	defer stop()
+
 	verbose := viper.GetBool("verbose")
-	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
+	ctx = ctxhelper.WithVerbose(ctx, verbose)
 
 	if !verbose {
 		uiprogress.Start()

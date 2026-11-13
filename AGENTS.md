@@ -12,7 +12,8 @@ main` in every repo under the current directory.
 
 - **Go 1.26**
 - `cobra` — CLI framework
-- `go-git` — used only for `clone`; all other operations shell out to `exec git`
+- `go-git` — SSH auth plumbing only; all Git operations (including `clone`)
+  shell out to `exec git`
 - `scribe` — structured output / verbose logging
 - `uiprogress` — progress bars in non-verbose mode
 - `go-github` + `oauth2` + `rate` — GitHub API for clone and OAuth auth
@@ -41,15 +42,16 @@ cmd/                 Cobra command definitions (one file per command)
   config/            align config subcommand
   remote/            align remote subcommands (add, remove, rename, set-url)
   stash/             align stash subcommands (pop, drop, list)
+  concurrency/       Shared --concurrency flag, help text, and signal context
 client/              Business logic layer called by cmd/
   client.go          Client struct, SSH auth, GitHub client construction
   clienter.go        Clienter interface (used for testing)
   dirs.go            GetDirs: discovers .git subdirs in a base path
   context/           Request-scoped state (verbose flag, repo map, excludes)
+  fanout/            Shared bounded rolling worker pool (Job, Result, Run)
   repos/             Per-repo git operations (fanOut pattern)
-    run.go           fanOut(ctx, dirs, label, args) — shared exec loop
-    concurrent.go    Bounded rolling worker pool for checkout and pull
-    clone.go         CloneRepos: uses go-git, not exec
+    run.go           Default*Concurrency limits and fanOut wrapper
+    clone.go         CloneRepos: dedupes destinations, pooled `git clone`
     status.go        StatusRepos: filters empty output, always verbose
     diff.go          DiffRepos: DiffConfig for filtering
   remotes/           Remote management operations
@@ -61,21 +63,22 @@ vendor/              Vendored deps — never edit directly
 
 ## Architecture Notes
 
-- **`fanOut` is the core pattern.** Every standard git operation assembles
-  `args []string` and uses a shared executor. Checkout and pull use
-  `fanOutConcurrent`; other operations and Git aliases use sequential `fanOut`.
-  Repository failures do not abort execution — errors are joined after all
-  attempts, unless the operation is canceled.
-- **Concurrency:** checkout and pull define their default limits in `repos`.
-  Their invocation-scoped override uses `ctxhelper.WithConcurrency` /
-  `ctxhelper.Concurrency`. Workers own Git buffers; only the coordinator writes
-  scribe output and advances progress. Checkout/pull derive a signal-aware
-  context from Cobra, stop queued work on cancellation, and join their workers.
+- **`fanOut` is the core pattern.** Every standard git operation (including
+  clone and remote operations) builds `fanout.Job`s and runs them through
+  `fanout.Run`. Git aliases use the same pool with a limit of 1. Repository
+  failures do not abort execution — errors are joined after all attempts,
+  unless the operation is canceled.
+- **Concurrency:** default limits live in `repos` (`Default*Concurrency`) and
+  `remotes` (`DefaultConcurrency`). The invocation-scoped override uses
+  `ctxhelper.WithConcurrency` / `ctxhelper.Concurrency`, set by
+  `cmd/concurrency.Context`, which also derives a signal-aware context.
+  Workers own Git buffers; only the coordinator writes scribe output and
+  advances progress. Cancellation stops queued work and joins workers.
 - **Non-verbose vs verbose:** non-verbose writes a `uiprogress` bar to stdout
   (not pipeable); verbose uses `scribe` for structured per-repo output. Always
   pass `--verbose` / `-v` when running non-interactively or in scripts.
-- **Remote operations** use a parallel fanOut variant that accepts
-  `perDirArgs [][]string` instead of a shared `args []string`.
+- **Remote operations** accept `perDirArgs [][]string` and convert them into
+  per-job args instead of a shared `args []string`.
 - **Context package** (`client/context/`) carries the verbose flag, GitHub repo
   map, and exclude list. Use `ctxhelper.WithVerbose` / `ctxhelper.Verbose`;
   never pass verbose as an explicit parameter.
@@ -96,8 +99,10 @@ vendor/              Vendored deps — never edit directly
 - **No callbacks:** prefer explicit data (e.g., `[][]string`) over function
   arguments passed as callbacks.
 - **No nested control structures:** use early returns and guard clauses.
-- **Sequential by default:** only checkout/pull opt into managed worker pools;
-  no goroutines in other operations unless there is a demonstrated need.
+- **Pooled fan-out:** all goroutines go through `client/fanout`; commands with
+  custom loops (status, diff, log, tag, remote list) stay
+  sequential. New fan-out commands register `--concurrency` via
+  `cmd/concurrency.AddFlag`.
 - **Vendor is read-only:** modify only via `go mod vendor`.
 - **After any Go change:** run `go fmt`, `go vet`, `go build ./...`,
   `go test ./...` in that order before committing.

@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	ctxhelper "github.com/gomicro/align/client/context"
+	"github.com/gomicro/align/client/repos"
+	"github.com/gomicro/align/cmd/concurrency"
 	"github.com/gomicro/align/cmd/selection"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
@@ -15,6 +17,7 @@ var prune bool
 
 func init() {
 	RootCmd.AddCommand(fetchCmd)
+	concurrency.AddFlag(fetchCmd, repos.DefaultFetchConcurrency)
 
 	fetchCmd.Flags().BoolVar(&tags, "tags", false, "fetch all tags")
 	fetchCmd.Flags().BoolVarP(&prune, "prune", "p", false, "remove stale remote-tracking refs after fetching")
@@ -24,7 +27,7 @@ func init() {
 var fetchCmd = &cobra.Command{
 	Use:               "fetch [remote]",
 	Short:             "Fetch from remotes across all repos in a directory",
-	Long:              `Fetch from remotes across all repos in a directory without merging into the working tree.`,
+	Long:              `Fetch from remotes across all repos in a directory without merging into the working tree.` + concurrency.Help,
 	Args:              cobra.MaximumNArgs(1),
 	ValidArgsFunction: fetchCmdValidArgsFunc,
 	PersistentPreRun:  setupClient,
@@ -55,8 +58,16 @@ func fetchCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string)
 }
 
 func fetchFunc(cmd *cobra.Command, args []string) error {
+	ctx, stop, err := concurrency.Context(cmd)
+	if err != nil {
+		cmd.SilenceUsage = true
+		return fmt.Errorf("fetch options: %w", err)
+	}
+
+	defer stop()
+
 	verbose := viper.GetBool("verbose")
-	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
+	ctx = ctxhelper.WithVerbose(ctx, verbose)
 
 	if !verbose {
 		uiprogress.Start()

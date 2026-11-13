@@ -6,6 +6,7 @@ import (
 
 	ctxhelper "github.com/gomicro/align/client/context"
 	"github.com/gomicro/align/client/repos"
+	"github.com/gomicro/align/cmd/concurrency"
 	"github.com/gomicro/align/cmd/selection"
 
 	"github.com/gosuri/uiprogress"
@@ -15,13 +16,13 @@ import (
 
 func init() {
 	RootCmd.AddCommand(checkoutCmd)
-	checkoutCmd.Flags().Int("concurrency", repos.DefaultCheckoutConcurrency, "maximum simultaneous Git checkouts (1 runs sequentially)")
+	concurrency.AddFlag(checkoutCmd, repos.DefaultCheckoutConcurrency)
 }
 
 var checkoutCmd = &cobra.Command{
 	Use:               "checkout [branch]",
 	Short:             "Checkout a branch across all repos in a directory",
-	Long:              `Switch to the specified branch across all repos in a directory.` + concurrencyHelp,
+	Long:              `Switch to the specified branch across all repos in a directory.` + concurrency.Help,
 	Args:              cobra.RangeArgs(1, 2),
 	ValidArgsFunction: checkoutCmdValidArgsFunc,
 	PersistentPreRun:  setupClient,
@@ -54,7 +55,7 @@ func checkoutCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete stri
 }
 
 func checkoutFunc(cmd *cobra.Command, args []string) error {
-	ctx, stop, err := concurrencyContext(cmd)
+	ctx, stop, err := concurrency.Context(cmd)
 	if err != nil {
 		cmd.SilenceUsage = true
 		return fmt.Errorf("checkout options: %w", err)

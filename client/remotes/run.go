@@ -1,81 +1,28 @@
 package remotes
 
 import (
-	"bytes"
 	"context"
-	"errors"
 	"fmt"
-	"os/exec"
-	"strings"
 
 	ctxhelper "github.com/gomicro/align/client/context"
-	"github.com/gosuri/uiprogress"
+	"github.com/gomicro/align/client/fanout"
 )
 
+// DefaultConcurrency bounds simultaneous remote changes when no override is set.
+const DefaultConcurrency = 50
+
 func (r *Remotes) fanOut(ctx context.Context, dirs []string, label string, perDirArgs [][]string) error {
-	count := len(dirs)
-	verbose := ctxhelper.Verbose(ctx)
-
-	var bar *uiprogress.Bar
-	currRepo := ""
-
-	if verbose {
-		r.scrb.BeginDescribe("Command")
-		defer r.scrb.EndDescribe()
-
-		r.scrb.BeginDescribe("directories")
-		defer r.scrb.EndDescribe()
-	} else {
-		bar = uiprogress.AddBar(count).
-			AppendCompleted().
-			PrependElapsed().
-			PrependFunc(func(b *uiprogress.Bar) string {
-				return fmt.Sprintf("%s (%d/%d)", label, b.Current(), count)
-			}).
-			AppendFunc(func(b *uiprogress.Bar) string {
-				return currRepo
-			})
+	limit, err := ctxhelper.Concurrency(ctx, DefaultConcurrency)
+	if err != nil {
+		return fmt.Errorf("resolving concurrency: %w", err)
 	}
 
-	var errs []error
-
+	jobs := make([]fanout.Job, len(dirs))
 	for i, dir := range dirs {
-		currRepo = fmt.Sprintf("\nCurrent Repo: %v", dir)
-		args := perDirArgs[i]
-
-		if verbose {
-			r.scrb.Print(fmt.Sprintf("git %s", strings.Join(args, " ")))
-		}
-
-		out := &bytes.Buffer{}
-		errout := &bytes.Buffer{}
-
-		cmd := exec.CommandContext(ctx, "git", args...)
-		cmd.Stdout = out
-		cmd.Stderr = errout
-		cmd.Dir = dir
-
-		err := cmd.Run()
-		if verbose {
-			r.scrb.BeginDescribe(dir)
-			if err != nil {
-				r.scrb.Error(err)
-				r.scrb.PrintLines(errout)
-			} else {
-				r.scrb.PrintLines(out)
-			}
-
-			r.scrb.EndDescribe()
-		} else {
-			if err != nil {
-				errs = append(errs, fmt.Errorf("%s: %w: %s", dir, err, strings.TrimSpace(errout.String())))
-			}
-
-			bar.Incr()
-		}
+		jobs[i] = fanout.Job{Dir: dir, Args: perDirArgs[i]}
 	}
 
-	currRepo = ""
-
-	return errors.Join(errs...)
+	// Per-job results are already printed and joined into the error.
+	_, err = fanout.Run(ctx, r.scrb, label, jobs, limit)
+	return err
 }

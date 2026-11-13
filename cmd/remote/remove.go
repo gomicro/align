@@ -1,10 +1,11 @@
 package remote
 
 import (
-	"context"
 	"fmt"
 
 	ctxhelper "github.com/gomicro/align/client/context"
+	"github.com/gomicro/align/client/remotes"
+	"github.com/gomicro/align/cmd/concurrency"
 	"github.com/gomicro/align/cmd/selection"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
@@ -13,19 +14,28 @@ import (
 
 func init() {
 	RemoteCmd.AddCommand(removeCmd)
+	concurrency.AddFlag(removeCmd, remotes.DefaultConcurrency)
 }
 
 var removeCmd = &cobra.Command{
 	Use:   "remove <remote_name>",
 	Short: "Remove a remote repository.",
-	Long:  "Remove a remote repository by its name.",
+	Long:  "Remove a remote repository by its name." + concurrency.Help,
 	Args:  cobra.ExactArgs(1),
 	RunE:  removeFunc,
 }
 
 func removeFunc(cmd *cobra.Command, args []string) error {
+	ctx, stop, err := concurrency.Context(cmd)
+	if err != nil {
+		cmd.SilenceUsage = true
+		return fmt.Errorf("remote remove options: %w", err)
+	}
+
+	defer stop()
+
 	verbose := viper.GetBool("verbose")
-	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
+	ctx = ctxhelper.WithVerbose(ctx, verbose)
 
 	if !verbose {
 		uiprogress.Start()

@@ -1,10 +1,11 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 
 	ctxhelper "github.com/gomicro/align/client/context"
+	"github.com/gomicro/align/client/repos"
+	"github.com/gomicro/align/cmd/concurrency"
 	"github.com/gomicro/align/cmd/selection"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
@@ -20,6 +21,7 @@ var (
 
 func init() {
 	RootCmd.AddCommand(commitCmd)
+	concurrency.AddFlag(commitCmd, repos.DefaultLocalConcurrency)
 
 	commitCmd.Flags().StringVarP(&message, "message", "m", "", "commit message")
 	commitCmd.Flags().BoolVarP(&all, "all", "a", false, "stage all tracked modified and deleted files before committing")
@@ -33,14 +35,22 @@ func init() {
 var commitCmd = &cobra.Command{
 	Use:              "commit",
 	Short:            "Commit staged changes across all repos in a directory",
-	Long:             `Commit staged changes across all repos in a directory.`,
+	Long:             `Commit staged changes across all repos in a directory.` + concurrency.Help,
 	PersistentPreRun: setupClient,
 	RunE:             commitFunc,
 }
 
 func commitFunc(cmd *cobra.Command, args []string) error {
+	ctx, stop, err := concurrency.Context(cmd)
+	if err != nil {
+		cmd.SilenceUsage = true
+		return fmt.Errorf("commit options: %w", err)
+	}
+
+	defer stop()
+
 	verbose := viper.GetBool("verbose")
-	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
+	ctx = ctxhelper.WithVerbose(ctx, verbose)
 
 	if !verbose {
 		uiprogress.Start()

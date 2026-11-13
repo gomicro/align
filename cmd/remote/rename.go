@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	ctxhelper "github.com/gomicro/align/client/context"
+	"github.com/gomicro/align/client/remotes"
+	"github.com/gomicro/align/cmd/concurrency"
 	"github.com/gomicro/align/cmd/selection"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
@@ -13,12 +15,13 @@ import (
 
 func init() {
 	RemoteCmd.AddCommand(renameCmd)
+	concurrency.AddFlag(renameCmd, remotes.DefaultConcurrency)
 }
 
 var renameCmd = &cobra.Command{
 	Use:               "rename <old_name> <new_name>",
 	Short:             "Rename a remote across all repos.",
-	Long:              "Rename a remote across all repos by specifying its current name and the desired new name.",
+	Long:              "Rename a remote across all repos by specifying its current name and the desired new name." + concurrency.Help,
 	Args:              cobra.ExactArgs(2),
 	ValidArgsFunction: renameCmdValidArgsFunc,
 	RunE:              renameFunc,
@@ -48,8 +51,16 @@ func renameCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string
 }
 
 func renameFunc(cmd *cobra.Command, args []string) error {
+	ctx, stop, err := concurrency.Context(cmd)
+	if err != nil {
+		cmd.SilenceUsage = true
+		return fmt.Errorf("remote rename options: %w", err)
+	}
+
+	defer stop()
+
 	verbose := viper.GetBool("verbose")
-	ctx := ctxhelper.WithVerbose(context.Background(), verbose)
+	ctx = ctxhelper.WithVerbose(ctx, verbose)
 
 	if !verbose {
 		uiprogress.Start()

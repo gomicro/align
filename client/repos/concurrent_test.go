@@ -21,6 +21,7 @@ import (
 	ctxhelper "github.com/gomicro/align/client/context"
 
 	"github.com/gomicro/scribe"
+	"github.com/google/go-github/github"
 	"github.com/gosuri/uiprogress"
 	"github.com/stretchr/testify/assert"
 )
@@ -145,6 +146,20 @@ func TestConcurrentDriver(t *testing.T) {
 
 	case "alias":
 		err = r.RunAlias(ctx, cfg.Dirs, "custom", "--git-option")
+
+	case "fetch":
+		err = r.FetchRepos(ctx, cfg.Dirs, "origin")
+
+	case "stash":
+		err = r.StashRepos(ctx, cfg.Dirs)
+
+	case "clone":
+		var ghRepos []*github.Repository
+		for _, dir := range cfg.Dirs {
+			ghRepos = append(ghRepos, &github.Repository{SSHURL: github.String("git@github.com:org/" + filepath.Base(dir) + ".git")})
+		}
+
+		_, err = r.CloneRepos(ctxhelper.WithRepos(ctx, ghRepos), "")
 	}
 
 	if cfg.Normal {
@@ -226,6 +241,7 @@ func startConcurrent(t *testing.T, cfg driverConfig) *concurrentFixture {
 		cmd: cmd, listener: listener, calls: make(chan gitCall, len(cfg.Dirs)+1),
 		done: make(chan struct{}),
 	}
+	cmd.Dir = base
 	cmd.Stdout = &f.stdout
 	cmd.Stderr = &f.stderr
 	err = cmd.Start()
@@ -255,6 +271,11 @@ func startConcurrent(t *testing.T, cfg driverConfig) *concurrentFixture {
 		}
 	})
 	return f
+}
+
+// key identifies a job; clones share a working directory but differ by arguments.
+func (c gitCall) key() string {
+	return c.Dir + " " + strings.Join(c.Args, " ")
 }
 
 func (f *concurrentFixture) acceptCalls() {
@@ -363,6 +384,10 @@ func TestConcurrentLimits(t *testing.T) {
 		{name: "above checkout default", op: "checkout", limit: DefaultCheckoutConcurrency + 1, override: true, count: 3, want: min(3, DefaultCheckoutConcurrency+1)},
 		{name: "above pull default", op: "pull", limit: DefaultPullConcurrency + 1, override: true, count: 3, want: min(3, DefaultPullConcurrency+1)},
 		{name: "alias stays sequential", op: "alias", limit: 10, override: true, count: 3, want: 1},
+		{name: "fetch default", op: "fetch", count: DefaultFetchConcurrency + 2, want: DefaultFetchConcurrency},
+		{name: "local default", op: "stash", count: DefaultLocalConcurrency + 2, want: DefaultLocalConcurrency},
+		{name: "clone default", op: "clone", count: DefaultCloneConcurrency + 2, want: DefaultCloneConcurrency},
+		{name: "explicit clone pool", op: "clone", limit: 2, override: true, count: 4, want: 2},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -374,8 +399,8 @@ func TestConcurrentLimits(t *testing.T) {
 			seen := make(map[string]bool)
 			for i := range active {
 				active[i] = f.next(t)
-				assert.False(t, seen[active[i].Dir])
-				seen[active[i].Dir] = true
+				assert.False(t, seen[active[i].key()])
+				seen[active[i].key()] = true
 			}
 			f.noCall(t)
 
@@ -383,13 +408,16 @@ func TestConcurrentLimits(t *testing.T) {
 			for i := tc.want; i < tc.count; i++ {
 				releaseGit(t, active[0], gitReply{})
 				active[0] = f.next(t)
-				assert.False(t, seen[active[0].Dir])
-				seen[active[0].Dir] = true
+				assert.False(t, seen[active[0].key()])
+				seen[active[0].key()] = true
 				f.noCall(t)
 			}
 			for _, call := range active {
 				if tc.op == "pull" {
 					assert.Equal(t, []string{"pull", "origin", "main", "--ff-only"}, call.Args)
+				}
+				if tc.op == "clone" {
+					assert.Equal(t, "clone", call.Args[0])
 				}
 				releaseGit(t, call, gitReply{})
 			}

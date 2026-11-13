@@ -47,7 +47,7 @@ func (r *Repos) ListBranches(ctx context.Context, dirs []string, args ...string)
 }
 
 func (r *Repos) Branches(ctx context.Context, dirs []string, args ...string) error {
-	return r.fanOut(ctx, dirs, "Branches", append([]string{"branch"}, args...))
+	return r.fanOut(ctx, dirs, "Branches", append([]string{"branch"}, args...), DefaultLocalConcurrency)
 }
 
 func (r *Repos) GetBranchNames(ctx context.Context, dirs []string) ([]string, error) {

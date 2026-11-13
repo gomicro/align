@@ -1,8 +1,15 @@
 package repos
 
-import "context"
+import (
+	"context"
 
-// RunAlias delegates expansion to Git in each repository's effective configuration.
+	"github.com/gomicro/align/client/fanout"
+)
+
+// RunAlias runs one repository at a time because aliases may be order-sensitive
+// and their arguments leave no room for a concurrency override.
 func (r *Repos) RunAlias(ctx context.Context, dirs []string, name string, args ...string) error {
-	return r.fanOut(ctx, dirs, name, append([]string{name}, args...))
+	// Per-job results are already printed and joined into the error.
+	_, err := fanout.Run(ctx, r.scrb, name, fanout.Jobs(dirs, append([]string{name}, args...)), 1)
+	return err
 }

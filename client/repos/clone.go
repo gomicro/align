@@ -1,19 +1,24 @@
 package repos
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
 
 	ctxhelper "github.com/gomicro/align/client/context"
-	"github.com/gosuri/uiprogress"
+	"github.com/gomicro/align/client/fanout"
 )
 
+// CloneRepos clones every repository in the context's repo map that is not
+// already present, returning those cloned successfully.
 func (r *Repos) CloneRepos(ctx context.Context, baseDir string) ([]*ctxhelper.Repository, error) {
+	limit, err := ctxhelper.Concurrency(ctx, DefaultCloneConcurrency)
+	if err != nil {
+		return nil, fmt.Errorf("resolving concurrency: %w", err)
+	}
+
 	dirRepos, err := ctxhelper.RepoMap(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("repomap context: %w", err)
@@ -24,70 +29,70 @@ func (r *Repos) CloneRepos(ctx context.Context, baseDir string) ([]*ctxhelper.Re
 		return nil, fmt.Errorf("remove excludes: %w", err)
 	}
 
-	count := 0
-	for _, rs := range dirRepos {
-		count += len(rs)
-	}
-
-	currRepo := ""
-	bar := uiprogress.AddBar(count).
-		AppendCompleted().
-		PrependElapsed().
-		PrependFunc(func(b *uiprogress.Bar) string {
-			return fmt.Sprintf("Cloning (%d/%d)", b.Current(), count)
-		}).
-		AppendFunc(func(b *uiprogress.Bar) string {
-			return currRepo
-		})
-
-	cloned := []*ctxhelper.Repository{}
+	var pending []*ctxhelper.Repository
+	var jobs []fanout.Job
 	var errs []error
+	seen := map[string]bool{}
 	for dir, rs := range dirRepos {
 		if baseDir != "" {
 			dir = baseDir
 		}
 
 		for i := range rs {
-			currRepo = fmt.Sprintf("\nCurrent Repo: %v/%v", dir, rs[i].Name)
 			dest := path.Join(".", dir, rs[i].Name)
+			if seen[dest] {
+				continue
+			}
 
-			exists, err := dirExists(dest)
+			seen[dest] = true
+
+			exists, err := cloneExists(dest)
 			if err != nil {
-				errs = append(errs, fmt.Errorf("repo dir %s: %w", dest, err))
+				errs = append(errs, err)
 				continue
 			}
 
 			if exists {
-				exists, err = dirExists(path.Join(dest, ".git"))
-				if err != nil {
-					errs = append(errs, fmt.Errorf("repo git dir %s: %w", dest, err))
-					continue
-				}
+				continue
 			}
 
-			if !exists {
-				cmd := exec.CommandContext(ctx, "git", "clone", rs[i].URL, dest)
-
-				buf := bytes.Buffer{}
-				cmd.Stdout = &buf
-
-				err := cmd.Run()
-				if err != nil {
-					errs = append(errs, fmt.Errorf("clone repo %s: %w", dest, err))
-					bar.Incr()
-					continue
-				}
-
-				cloned = append(cloned, rs[i])
-			}
-
-			bar.Incr()
+			pending = append(pending, rs[i])
+			jobs = append(jobs, fanout.Job{Name: dest, Args: []string{"clone", rs[i].URL, dest}})
 		}
 	}
 
-	currRepo = ""
+	results, err := fanout.Run(ctx, r.scrb, "Cloning", jobs, limit)
+	if err != nil {
+		errs = append(errs, err)
+	}
+
+	cloned := []*ctxhelper.Repository{}
+	for _, result := range results {
+		if result.Err == nil {
+			cloned = append(cloned, pending[result.Index])
+		}
+	}
 
 	return cloned, errors.Join(errs...)
+}
+
+// cloneExists reports whether dest already holds a Git repository.
+func cloneExists(dest string) (bool, error) {
+	exists, err := dirExists(dest)
+	if err != nil {
+		return false, fmt.Errorf("repo dir %s: %w", dest, err)
+	}
+
+	if !exists {
+		return false, nil
+	}
+
+	exists, err = dirExists(path.Join(dest, ".git"))
+	if err != nil {
+		return false, fmt.Errorf("repo git dir %s: %w", dest, err)
+	}
+
+	return exists, nil
 }
 
 func dirExists(path string) (bool, error) {

@@ -210,6 +210,7 @@ func TestIgnoreUnsupported(t *testing.T) {
 		{"auth", "--ignore-repo", "userauth"},
 		{"config", "github.limits.burst", "10", "--ignore-repo", "userauth"},
 		{"completion", "--shell", "bash", "--ignore-repo", "userauth"},
+		{"skills", "dump", "--output-dir", "exported", "--ignore-repo", "userauth"},
 		{"clone", "fixture", "--ignore-repo", "userauth"},
 	} {
 		t.Run(args[0], func(t *testing.T) {

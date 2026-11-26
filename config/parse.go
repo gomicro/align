@@ -16,7 +16,6 @@ func ParseFromFile() (*Config, error) {
 		return nil, fmt.Errorf("failed getting home directory: %v", err.Error())
 	}
 
-	conf := defaultConfig
 	dExists, err := DirExists()
 	if err != nil {
 		return nil, fmt.Errorf("config: parse from file: dir exists: %v", err.Error())
@@ -28,7 +27,7 @@ func ParseFromFile() (*Config, error) {
 			return nil, fmt.Errorf("config: parse from file: create config dir: %v", err.Error())
 		}
 
-		return &conf, nil
+		return parseConfig(nil)
 	}
 
 	fExists, err := FileExists()
@@ -37,7 +36,7 @@ func ParseFromFile() (*Config, error) {
 	}
 
 	if !fExists {
-		return &conf, nil
+		return parseConfig(nil)
 	}
 
 	b, err := os.ReadFile(filepath.Join(usr.HomeDir, confDir, confFile))
@@ -45,12 +44,17 @@ func ParseFromFile() (*Config, error) {
 		return nil, fmt.Errorf("failed to read config file: %v", err.Error())
 	}
 
-	err = yaml.Unmarshal(b, &conf)
+	return parseConfig(b)
+}
+
+func parseConfig(b []byte) (*Config, error) {
+	conf := New("")
+	err := yaml.Unmarshal(b, conf)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config file: %v", err.Error())
 	}
 
-	return &conf, nil
+	return conf.WithDefaults(), nil
 }
 
 // DirExists reports whether the ~/.align config directory exists.

@@ -50,6 +50,8 @@ func WithNoColor() Option {
 
 // New constructs a Client from cfg, initialising SSH auth, HTTPS auth, the GitHub API client, and rate limiter.
 func New(cfg *config.Config, opts ...Option) (*Client, error) {
+	cfg = cfg.WithDefaults()
+
 	co := &clientOptions{}
 	for _, o := range opts {
 		o(co)

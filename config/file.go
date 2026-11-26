@@ -15,23 +15,45 @@ const (
 	confFile = "/config"
 )
 
-var defaultConfig = Config{
-	Github: &GithubHost{
-		Limits: &Limits{
-			RequestsPerSecond: 10,
-			Burst:             25,
-		},
-	},
-}
-
 // Config holds the top-level align configuration read from ~/.align/config.
 type Config struct {
 	Github *GithubHost `yaml:"github.com"`
 }
 
-// New returns a minimal Config with the given GitHub token set.
+// New returns a Config with the given GitHub token and default rate limits.
 func New(tkn string) *Config {
-	return &Config{Github: &GithubHost{Token: tkn}}
+	return &Config{Github: &GithubHost{
+		Token: tkn,
+		Limits: &Limits{
+			RequestsPerSecond: 10,
+			Burst:             25,
+		},
+	}}
+}
+
+// WithDefaults returns an independent copy with missing GitHub settings initialized.
+func (c *Config) WithDefaults() *Config {
+	defaults := New("")
+	if c == nil {
+		return defaults
+	}
+
+	result := *c
+	if c.Github == nil {
+		result.Github = defaults.Github
+		return &result
+	}
+
+	host := *c.Github
+	result.Github = &host
+	if c.Github.Limits == nil {
+		host.Limits = defaults.Github.Limits
+		return &result
+	}
+
+	limits := *c.Github.Limits
+	host.Limits = &limits
+	return &result
 }
 
 // WriteFile marshals and writes the config to ~/.align/config.

@@ -11,40 +11,37 @@ import (
 
 // ParseFromFile reads ~/.align/config, creating the config directory if absent.
 func ParseFromFile() (*Config, error) {
-	usr, err := user.Current()
+	path, err := FilePath()
 	if err != nil {
-		return nil, fmt.Errorf("failed getting home directory: %v", err.Error())
+		return nil, fmt.Errorf("finding config: %w", err)
 	}
 
-	dExists, err := DirExists()
+	conf, err := ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("config: parse from file: dir exists: %v", err.Error())
+		return nil, fmt.Errorf("reading config: %w", err)
 	}
 
-	if !dExists {
-		err := CreateDir()
-		if err != nil {
-			return nil, fmt.Errorf("config: parse from file: create config dir: %v", err.Error())
-		}
+	return conf, nil
+}
 
-		return parseConfig(nil)
-	}
-
-	fExists, err := FileExists()
+// ReadFile reads a config file, creating its parent directory if absent.
+func ReadFile(path string) (*Config, error) {
+	err := os.MkdirAll(filepath.Dir(path), 0700)
 	if err != nil {
-		return nil, fmt.Errorf("parse from file: file exists: %v", err.Error())
+		return nil, fmt.Errorf("creating config directory: %w", err)
 	}
 
-	if !fExists {
-		return parseConfig(nil)
+	b, err := os.ReadFile(path)
+	if err != nil && !os.IsNotExist(err) {
+		return nil, fmt.Errorf("reading config file: %w", err)
 	}
 
-	b, err := os.ReadFile(filepath.Join(usr.HomeDir, confDir, confFile))
+	conf, err := parseConfig(b)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read config file: %v", err.Error())
+		return nil, fmt.Errorf("parsing config file: %w", err)
 	}
 
-	return parseConfig(b)
+	return conf, nil
 }
 
 func parseConfig(b []byte) (*Config, error) {

@@ -34,9 +34,9 @@ func completionFunc(cmd *cobra.Command, args []string) {
 	case "bash":
 		err = RootCmd.GenBashCompletionV2(os.Stdout, true)
 	case "fish":
-		err = RootCmd.GenFishCompletion(os.Stdout, false)
+		err = RootCmd.GenFishCompletion(os.Stdout, true)
 	case "ps", "powershell", "power_shell":
-		err = RootCmd.GenPowerShellCompletion(os.Stdout)
+		err = RootCmd.GenPowerShellCompletionWithDesc(os.Stdout)
 	case "zsh":
 		err = RootCmd.GenZshCompletion(os.Stdout)
 	default:

@@ -3,7 +3,10 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"strings"
+	"unicode"
 
+	"github.com/gomicro/align/client"
 	ctxhelper "github.com/gomicro/align/client/context"
 	"github.com/gomicro/align/client/repos"
 	"github.com/gomicro/align/cmd/concurrency"
@@ -100,14 +103,98 @@ func cloneFunc(cmd *cobra.Command, args []string) error {
 }
 
 func createCmdValidArgsFunc(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	setupClient(cmd, args)
+	candidates, directive := completeClone(cmd.Context(), args, toComplete, liveCloneAccountSource{})
+	return candidates, directive
+}
 
-	valid, err := clt.GetLogins(context.Background())
+type cloneAccountSource interface {
+	CloneAccounts(context.Context) ([]client.CloneAccount, error)
+}
+
+type liveCloneAccountSource struct {
+	path string
+}
+
+func (s liveCloneAccountSource) CloneAccounts(ctx context.Context) ([]client.CloneAccount, error) {
+	clt, err := newClient(s.path)
 	if err != nil {
-		valid = []string{"error fetching"}
+		return nil, fmt.Errorf("creating completion client: %w", err)
 	}
 
-	return valid, cobra.ShellCompDirectiveNoFileComp
+	accounts, err := clt.CloneAccounts(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("fetching completion accounts: %w", err)
+	}
+
+	return accounts, nil
+}
+
+func completeClone(ctx context.Context, args []string, prefix string, source cloneAccountSource) ([]string, cobra.ShellCompDirective) {
+	if len(args) == 1 {
+		return nil, cobra.ShellCompDirectiveFilterDirs
+	}
+
+	if len(args) > 1 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	accounts, err := source.CloneAccounts(ctx)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	var candidates []string
+	for i := range accounts {
+		account := accounts[i]
+		if !validCompletionLogin(account.Login) || !strings.HasPrefix(account.Login, prefix) {
+			continue
+		}
+
+		description := "user"
+		if account.Organization {
+			description = "organization"
+			for _, value := range []string{account.Name, account.Description} {
+				detail := completionText(value)
+				if detail == "" {
+					continue
+				}
+
+				description += " - " + detail
+			}
+		}
+
+		candidates = append(candidates, account.Login+"\t"+description)
+	}
+
+	return candidates, cobra.ShellCompDirectiveNoFileComp
+}
+
+func completionText(value string) string {
+	var builder strings.Builder
+	for _, r := range value {
+		if !unicode.IsPrint(r) {
+			builder.WriteByte(' ')
+			continue
+		}
+
+		builder.WriteRune(r)
+	}
+
+	return strings.Join(strings.Fields(builder.String()), " ")
+}
+
+func validCompletionLogin(login string) bool {
+	if login == "" {
+		return false
+	}
+
+	for _, r := range login {
+		if !unicode.IsPrint(r) || unicode.IsSpace(r) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func filterByTopics(repos []*github.Repository, topics []string) []*github.Repository {

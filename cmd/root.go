@@ -119,10 +119,25 @@ func Execute() error {
 }
 
 func setupClient(cmd *cobra.Command, args []string) {
-	c, err := config.ParseFromFile()
+	var err error
+	clt, err = newClient("")
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)
 		os.Exit(1)
+	}
+}
+
+func newClient(path string) (*client.Client, error) {
+	var c *config.Config
+	var err error
+	if path == "" {
+		c, err = config.ParseFromFile()
+	} else {
+		c, err = config.ReadFile(path)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("loading config: %w", err)
 	}
 
 	var opts []client.Option
@@ -130,9 +145,10 @@ func setupClient(cmd *cobra.Command, args []string) {
 		opts = append(opts, client.WithNoColor())
 	}
 
-	clt, err = client.New(c, opts...)
+	result, err := client.New(c, opts...)
 	if err != nil {
-		fmt.Printf("Error: %s\n", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("creating client: %w", err)
 	}
+
+	return result, nil
 }

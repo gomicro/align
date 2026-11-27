@@ -178,7 +178,30 @@ func knownHostsCallback() (ssh.HostKeyCallback, error) {
 
 // GetLogins returns the authenticated user's login and all org logins, lowercased.
 func (c *Client) GetLogins(ctx context.Context) ([]string, error) {
-	logins := []string{}
+	accounts, err := c.CloneAccounts(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get logins: getting accounts: %w", err)
+	}
+
+	logins := make([]string, 0, len(accounts))
+	for i := range accounts {
+		logins = append(logins, accounts[i].Login)
+	}
+
+	return logins, nil
+}
+
+// CloneAccount describes an account offered as a clone target.
+type CloneAccount struct {
+	Login        string
+	Name         string
+	Description  string
+	Organization bool
+}
+
+// CloneAccounts returns the authenticated user and organizations available as clone targets.
+func (c *Client) CloneAccounts(ctx context.Context) ([]CloneAccount, error) {
+	var accounts []CloneAccount
 
 	user, _, err := c.ghClient.Users.Get(ctx, "")
 	if err != nil {
@@ -189,28 +212,44 @@ func (c *Client) GetLogins(ctx context.Context) ([]string, error) {
 		return nil, fmt.Errorf("get user: %v", err.Error())
 	}
 
-	logins = append(logins, strings.ToLower(user.GetLogin()))
+	accounts = append(accounts, CloneAccount{Login: strings.ToLower(user.GetLogin())})
 
 	opts := &github.ListOptions{
 		Page:    0,
 		PerPage: 100,
 	}
 
-	orgs, _, err := c.ghClient.Organizations.List(ctx, "", opts)
-	if err != nil {
-		if _, ok := err.(*github.RateLimitError); ok {
-			return nil, fmt.Errorf("github: hit rate limit")
+	for {
+		orgs, resp, err := c.ghClient.Organizations.List(ctx, "", opts)
+		if err != nil {
+			if _, ok := err.(*github.RateLimitError); ok {
+				return nil, fmt.Errorf("github: hit rate limit")
+			}
+
+			return nil, fmt.Errorf("list orgs: %v", err.Error())
 		}
 
-		return nil, fmt.Errorf("list orgs: %v", err.Error())
+		for i := range orgs {
+			accounts = append(accounts, CloneAccount{
+				Login:        strings.ToLower(orgs[i].GetLogin()),
+				Name:         orgs[i].GetName(),
+				Description:  orgs[i].GetDescription(),
+				Organization: true,
+			})
+		}
+
+		if resp == nil {
+			return nil, fmt.Errorf("clone accounts: missing organization response")
+		}
+
+		if resp.NextPage == 0 {
+			break
+		}
+
+		opts.Page = resp.NextPage
 	}
 
-	for i := range orgs {
-		o := orgs[i].GetLogin()
-		logins = append(logins, strings.ToLower(o))
-	}
-
-	return logins, nil
+	return accounts, nil
 }
 
 // Remotes runs git remote across all dirs.
